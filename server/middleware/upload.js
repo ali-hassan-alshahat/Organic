@@ -54,7 +54,7 @@ async function uploadImages() {
   }
   fs.writeFileSync(uploadedFile, JSON.stringify(allResults, null, 2));
   console.log(
-    `All uploads complete! ${allResults.length} total images recorded.`,
+    `All uploads complete ${allResults.length} total images uploaded.`,
   );
   process.exit(0);
 }
