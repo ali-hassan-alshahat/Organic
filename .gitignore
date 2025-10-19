@@ -39,3 +39,6 @@ Thumbs.db
 # Coverage / test
 coverage/
 *.lcov
+
+# Ignore all upload results
+*.json

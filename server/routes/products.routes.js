@@ -1,27 +1,14 @@
 const express = require("express");
-const Product = require("../models/product.model.js"); // adjust path if needed
-
 const router = express.Router();
+const productController = require("../controllers/products.controller");
 
-// Create new product
-router.post("/", async (req, res) => {
-  try {
-    const product = new Product(req.body);
-    const savedProduct = await product.save();
-    res.status(201).json(savedProduct);
-  } catch (err) {
-    res.status(400).json({ message: err.message });
-  }
-});
+// Public
+router.get("/", productController.getProducts);
+router.get("/:id", productController.getProductById);
 
-// Get all products
-router.get("/", async (req, res) => {
-  try {
-    const products = await Product.find();
-    res.json(products);
-  } catch (err) {
-    res.status(500).json({ message: err.message });
-  }
-});
+// Admin (unprotected for now so we need to add auth middleware later)
+router.post("/", productController.createProduct);
+router.put("/:id", productController.updateProduct);
+router.delete("/:id", productController.deleteProduct);
 
 module.exports = router;

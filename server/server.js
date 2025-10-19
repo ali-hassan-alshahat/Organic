@@ -1,20 +1,38 @@
 const express = require("express");
-const app = express();
 const mongoose = require("mongoose");
 const dotenv = require("dotenv");
-const productRoutes = require("./routes/products.routes.js");
+const cors = require("cors");
+const productRoutes = require("./routes/products.routes");
+const categoryRoutes = require("./routes/category.routes");
+const { notFound, errorHandler } = require("./middleware/error.middleware");
+
 dotenv.config();
 
-mongoose.connect(process.env.MONGO_URI).then(() => {
-  console.log("Connected to MongoDB");
-});
+const app = express();
 
-app.get("/", (req, res) => {
-  res.send("Server is running successfully 🚀");
-});
+// Middleware
+app.use(cors());
+app.use(express.json());
 
+// Routes
+app.use("/api/categories", categoryRoutes);
 app.use("/api/products", productRoutes);
 
-app.listen(process.env.PORT || 8000, () => {
-  console.log("Listening in port 8000");
-});
+// Health
+app.get("/", (req, res) => res.send("Server is running successfully 🚀"));
+
+// Error middlewares (catch all)
+app.use(notFound);
+app.use(errorHandler);
+
+const PORT = process.env.PORT || 8000;
+mongoose
+  .connect(process.env.MONGO_URI)
+  .then(() => {
+    console.log("✅ Connected to MongoDB");
+    app.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`));
+  })
+  .catch((err) => {
+    console.error("❌ MongoDB connection error:", err);
+    process.exit(1);
+  });

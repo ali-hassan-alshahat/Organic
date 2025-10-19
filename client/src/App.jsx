@@ -1,6 +1,7 @@
 import BannerTop from "./components/BannerTop";
 import Featured from "./components/Featured";
 import Navbar from "./components/Navbar";
+import PopularProducts from "./components/PopularProducts";
 
 function App() {
   return (
@@ -8,6 +9,7 @@ function App() {
       <Navbar />
       <BannerTop />
       <Featured />
+      <PopularProducts />
     </>
   );
 }
