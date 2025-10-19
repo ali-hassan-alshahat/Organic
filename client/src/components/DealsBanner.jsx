@@ -92,7 +92,7 @@ const DealsBanner = () => {
             key={item.id}
             whileHover={{ scale: 1.02 }}
             transition={{ type: "spring", stiffness: 200 }}
-            className="relative h-[320px] sm:h-[380px] md:h-[420px] lg:h-[480px] rounded-2xl overflow-hidden shadow-md group"
+            className="relative h-[320px] sm:h-[380px] md:h-[420px] lg:h-[480px] rounded-2xl overflow-hidden shadow-md"
           >
             <div
               className="absolute inset-0 bg-cover bg-center"
@@ -170,13 +170,12 @@ const DealsBanner = () => {
               )}
               <Link
                 to={item.link}
-                className="flex items-center gap-2 bg-white hover:bg-gray-100 text-green-600 px-4 sm:px-5 py-2 sm:py-3 rounded-full font-medium transition-all duration-300 text-sm sm:text-base"
+                className="flex items-center bg-white hover:bg-gray-200 transition-all duration-200 ease-in-out text-[var(--main-primary)] w-max py-2 sm:py-3 px-4 sm:px-6 rounded-4xl cursor-pointer group text-sm sm:text-base"
               >
-                {item.btnText}
-                <MoveRight
-                  size={16}
-                  className="group-hover:translate-x-1 transition-transform"
-                />
+                <span>{item.btnText}</span>
+                <span className="ps-1 transition-all duration-300 ease-in-out group-hover:translate-x-2">
+                  <MoveRight />
+                </span>
               </Link>
             </div>
           </motion.div>
