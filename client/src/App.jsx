@@ -1,5 +1,6 @@
 import BannerTop from "./components/BannerTop";
 import DealsBanner from "./components/DealsBanner";
+import DiscountBanner from "./components/DiscountBanner";
 import Featured from "./components/Featured";
 import HotDeals from "./components/HotDeals";
 import Navbar from "./components/Navbar";
@@ -14,6 +15,7 @@ function App() {
       <PopularProducts />
       <DealsBanner />
       <HotDeals />
+      <DiscountBanner />
     </>
   );
 }
