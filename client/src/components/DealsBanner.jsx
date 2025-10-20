@@ -174,7 +174,7 @@ const DealsBanner = () => {
               >
                 <span>{item.btnText}</span>
                 <span className="ps-1 transition-all duration-300 ease-in-out group-hover:translate-x-2">
-                  <MoveRight />
+                  <MoveRight size={18} />
                 </span>
               </Link>
             </div>

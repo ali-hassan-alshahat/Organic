@@ -41,7 +41,7 @@ const BannerTop = () => {
               >
                 <span>Shop Now</span>
                 <span className="ps-1 transition-all duration-300 ease-in-out group-hover:translate-x-2">
-                  <MoveRight />
+                  <MoveRight size={18} />
                 </span>
               </Link>
             </div>
@@ -71,7 +71,7 @@ const BannerTop = () => {
               >
                 <span>Shop Now</span>
                 <span className="ps-1 transition-all duration-300 ease-in-out group-hover:translate-x-2">
-                  <MoveRight />
+                  <MoveRight size={18} />
                 </span>
               </Link>
             </div>
@@ -97,7 +97,7 @@ const BannerTop = () => {
               >
                 <span>Shop Now</span>
                 <span className="ps-1 transition-all duration-300 ease-in-out group-hover:translate-x-2">
-                  <MoveRight />
+                  <MoveRight size={18} />
                 </span>
               </Link>
             </div>
