@@ -1,4 +1,5 @@
 import BannerTop from "./components/BannerTop";
+import CompaniesVector from "./components/CompaniesVector";
 import DealsBanner from "./components/DealsBanner";
 import DiscountBanner from "./components/DiscountBanner";
 import Featured from "./components/Featured";
@@ -18,6 +19,7 @@ function App() {
       <HotDeals />
       <DiscountBanner />
       <FeaturedBanner />
+      <CompaniesVector />
     </>
   );
 }
