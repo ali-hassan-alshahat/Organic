@@ -215,7 +215,7 @@ const FeaturedBanner = () => {
                         {[1, 2, 3].map((index) => (
                           <div
                             key={index}
-                            className="w-16 h-16 bg-gray-100 rounded-lg border-2 border-gray-200 p-1 cursor-pointer hover:border-green-500 transition-colors"
+                            className="w-16 h-16 bg-gray-100 rounded-lg border-2 border-gray-200 p-1 cursor-pointer hover:border-[var(--main-primary)] transition-colors"
                           >
                             <img
                               src={quickView.image}
@@ -312,7 +312,7 @@ const FeaturedBanner = () => {
                           <ShoppingBag size={24} />
                           Add to Cart
                         </button>
-                        <button className="p-4 border-2 border-gray-300 hover:border-green-500 hover:bg-gray-50 cursor-pointer rounded-xl transition-colors">
+                        <button className="p-4 border-2 border-gray-300 hover:border-[var(--main-primary)] hover:bg-gray-50 cursor-pointer rounded-xl transition-colors">
                           <Heart size={24} className="text-gray-600" />
                         </button>
                       </div>

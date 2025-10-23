@@ -6,7 +6,7 @@ import {
   NavigationMenuLink,
   NavigationMenuList,
 } from "./ui/navigation-menu";
-import logo from "../assets/logo.svg";
+import logo from "../assets/logo-1.svg";
 import { Link } from "react-router-dom";
 
 const Navbar = () => {

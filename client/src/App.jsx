@@ -4,6 +4,7 @@ import DealsBanner from "./components/DealsBanner";
 import DiscountBanner from "./components/DiscountBanner";
 import Featured from "./components/Featured";
 import FeaturedBanner from "./components/FeaturedBanner";
+import Footer from "./components/Footer";
 import HotDeals from "./components/HotDeals";
 import Navbar from "./components/Navbar";
 import Newsletter from "./components/Newsletter";
@@ -24,6 +25,7 @@ function App() {
       <CompaniesVector />
       <SocialsBanner />
       <Newsletter />
+      <Footer />
     </>
   );
 }
