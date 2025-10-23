@@ -8,7 +8,7 @@ import securepayment from "../assets/securePayment.svg";
 
 const Footer = () => {
   return (
-    <div className="bg-[#1A1A1A] text-white py-2 md:py-4 lg:py-6">
+    <footer className="bg-[#1A1A1A] text-white py-2 md:py-4 lg:py-6">
       <div className="center">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 md:gap-10 lg:gap-12">
           <div className="px-4 md:px-6 lg:px-8 text-left">
@@ -80,7 +80,7 @@ const Footer = () => {
           </div>
         </div>
       </div>
-    </div>
+    </footer>
   );
 };
 
