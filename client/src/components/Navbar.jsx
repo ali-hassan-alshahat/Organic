@@ -7,10 +7,11 @@ import {
   NavigationMenuList,
 } from "./ui/navigation-menu";
 import logo from "../assets/logo-1.svg";
-import { Link } from "react-router-dom";
+import { Link, NavLink, useLocation } from "react-router-dom";
 
 const Navbar = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const location = useLocation();
 
   const toggleMobileMenu = () => {
     setIsMobileMenuOpen(!isMobileMenuOpen);
@@ -23,11 +24,14 @@ const Navbar = () => {
     { label: "FAQ", href: "/faq" },
     { label: "Contact Us", href: "/contact" },
   ];
+  const isActive = (path) => {
+    return location.pathname === path;
+  };
 
   return (
     <>
       <nav className="sticky top-0 z-50 bg-white shadow-sm">
-        <div className="container mx-auto px-4 sm:px-6 lg:px-6 xl:px-8">
+        <div className="center" style={{ padding: "10px" }}>
           <div className="flex justify-between items-center py-4">
             <div className="flex-shrink-0">
               <img src={logo} alt="Logo" className="h-8 w-auto sm:h-10" />
@@ -38,7 +42,11 @@ const Navbar = () => {
                   {navItems.map((item) => (
                     <NavigationMenuItem key={item.label}>
                       <NavigationMenuLink
-                        className="text-gray-700 text-lg hover:text-[var(--soft-primary)] hover:bg-white font-medium transition-colors duration-200 cursor-pointer px-3 py-2"
+                        className={`text-lg hover:text-[var(--soft-primary)] hover:bg-white font-medium transition-colors duration-200 cursor-pointer px-3 py-2 ${
+                          isActive(item.href)
+                            ? "text-[var(--soft-primary)]"
+                            : "text-gray-700"
+                        }`}
                         asChild
                       >
                         <Link to={item.href}>{item.label}</Link>
@@ -57,7 +65,7 @@ const Navbar = () => {
                 <ShoppingBag className="h-5 w-5 sm:h-6 sm:w-6 cursor-pointer hover:text-[var(--soft-primary)] transition-colors" />
               </div>
               <button
-                className="lg:hidden p-2 rounded-md text-gray-700 hover:text-[var(--soft-primary)] hover:bg-gray-100 transition-colors"
+                className="lg:hidden p-2 cursor-pointer rounded-md text-gray-700 hover:text-[var(--soft-primary)] hover:bg-gray-100 transition-colors"
                 onClick={toggleMobileMenu}
               >
                 {isMobileMenuOpen ? (
@@ -80,7 +88,11 @@ const Navbar = () => {
                 <Link
                   key={item.label}
                   to={item.href}
-                  className="text-gray-700 text-lg hover:text-[var(--soft-primary)] font-medium transition-colors duration-200 py-2 px-4 hover:bg-gray-50 rounded-md"
+                  className={`text-lg font-medium transition-colors duration-200 py-2 px-4 hover:bg-gray-50 rounded-md ${
+                    isActive(item.href)
+                      ? "text-[var(--soft-primary)] bg-gray-50"
+                      : "text-gray-700 hover:text-[var(--soft-primary)]"
+                  }`}
                   onClick={() => setIsMobileMenuOpen(false)}
                 >
                   {item.label}
