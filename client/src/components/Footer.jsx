@@ -12,7 +12,12 @@ const Footer = () => {
       <div className="center">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 md:gap-10 lg:gap-12">
           <div className="px-4 md:px-6 lg:px-8 text-left">
-            <img src={logo} alt="Logo" className="h-8 sm:h-10 lg:h-12 mb-4" />
+            <img
+              src={logo}
+              loading="lazy"
+              alt="Logo"
+              className="h-8 sm:h-10 lg:h-12 mb-4"
+            />
             <p className="text-gray-400 text-sm sm:text-base leading-relaxed mb-6 md:mb-8">
               Morbi cursus porttitor enim lobortis molestie. Duis gravida turpis
               dui, eget bibendum magna congue nec.
@@ -70,6 +75,7 @@ const Footer = () => {
                 (item) => (
                   <img
                     src={item}
+                    loading="lazy"
                     alt="Logo"
                     key={item}
                     className="sm:h-4 md:h-8 lg:h-10 w-auto cursor-pointer"

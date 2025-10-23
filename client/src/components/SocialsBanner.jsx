@@ -52,6 +52,7 @@ const SocialsBanner = () => {
               <div className="relative overflow-hidden rounded-lg">
                 <img
                   src={post}
+                  loading="lazy"
                   alt={`Instagram post ${index + 1}`}
                   className="w-full h-auto object-cover transition-transform duration-300 group-hover:scale-105"
                 />

@@ -11,6 +11,7 @@ import PopularProducts from "./components/PopularProducts";
 import SocialsBanner from "./components/SocialsBanner";
 import Layout from "./components/Layout";
 import Shop from "./pages/Shop";
+import Home from "./pages/Home";
 
 function App() {
   let routers = createBrowserRouter([
@@ -19,21 +20,8 @@ function App() {
       element: <Layout />,
       children: [
         {
-          path: "/",
-          element: (
-            <>
-              <BannerTop />
-              <Featured />
-              <PopularProducts />
-              <DealsBanner />
-              <HotDeals />
-              <DiscountBanner />
-              <FeaturedBanner />
-              <CompaniesVector />
-              <SocialsBanner />
-              <Newsletter />
-            </>
-          ),
+          index: true,
+          element: <Home />,
         },
         { path: "/shop", element: <Shop /> },
       ],

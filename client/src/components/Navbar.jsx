@@ -34,7 +34,12 @@ const Navbar = () => {
         <div className="center" style={{ padding: "10px" }}>
           <div className="flex justify-between items-center py-4">
             <div className="flex-shrink-0">
-              <img src={logo} alt="Logo" className="h-8 w-auto sm:h-10" />
+              <img
+                src={logo}
+                loading="lazy"
+                alt="Logo"
+                className="h-8 w-auto sm:h-10"
+              />
             </div>
             <div className="hidden lg:block">
               <NavigationMenu>

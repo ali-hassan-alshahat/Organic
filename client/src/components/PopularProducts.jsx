@@ -123,6 +123,7 @@ const PopularProducts = () => {
                   <div className="w-full aspect-square overflow-hidden flex items-center justify-center">
                     <img
                       src={product.image}
+                      loading="lazy"
                       alt={product.name}
                       className="w-full h-full object-contain"
                     />
@@ -204,6 +205,7 @@ const PopularProducts = () => {
                     <div className="w-full max-w-sm rounded-xl p-6">
                       <img
                         src={quickView.image}
+                        loading="lazy"
                         alt={quickView.name}
                         className="w-full h-64 object-contain"
                       />
@@ -216,6 +218,7 @@ const PopularProducts = () => {
                         >
                           <img
                             src={quickView.image}
+                            loading="lazy"
                             alt={quickView.name}
                             className="w-full h-full object-contain"
                           />
