@@ -2,7 +2,6 @@ import React from "react";
 import Slider from "react-slick";
 import "slick-carousel/slick/slick.css";
 import "slick-carousel/slick/slick-theme.css";
-
 import Vector1 from "../assets/vector-1.svg?react";
 import Vector2 from "../assets/vector-2.svg?react";
 import Vector3 from "../assets/vector-3.svg?react";

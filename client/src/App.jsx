@@ -7,6 +7,7 @@ import FeaturedBanner from "./components/FeaturedBanner";
 import HotDeals from "./components/HotDeals";
 import Navbar from "./components/Navbar";
 import PopularProducts from "./components/PopularProducts";
+import SocialsBanner from "./components/SocialsBanner";
 
 function App() {
   return (
@@ -20,6 +21,7 @@ function App() {
       <DiscountBanner />
       <FeaturedBanner />
       <CompaniesVector />
+      <SocialsBanner />
     </>
   );
 }
