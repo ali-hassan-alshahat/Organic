@@ -10,10 +10,12 @@ import HotDeals from "../components/HotDeals";
 import Newsletter from "../components/Newsletter";
 import PopularProducts from "../components/PopularProducts";
 import SocialsBanner from "../components/SocialsBanner";
+import DynamicBreadcrumb from "@/components/DynamicBreadcrumb";
 
 const Home = () => {
   return (
     <>
+      <DynamicBreadcrumb items={[{ label: "Home", href: "/" }]} />
       <BannerTop />
       <Featured />
       <PopularProducts />

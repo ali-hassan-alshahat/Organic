@@ -83,6 +83,13 @@ body {
 .focus\:text-accent-foreground:focus {
   color: var(--soft-primary) !important;
 }
+.hover\:text-foreground {
+  &:hover {
+    @media (hover: hover) {
+      color: var(--soft-primary);
+    }
+  }
+}
 @theme inline {
   --radius-sm: calc(var(--radius) - 4px);
   --radius-md: calc(var(--radius) - 2px);
