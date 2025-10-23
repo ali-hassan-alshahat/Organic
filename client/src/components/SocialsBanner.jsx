@@ -17,7 +17,7 @@ const SocialsBanner = () => {
     dots: false,
     arrows: false,
     infinite: true,
-    speed: 1000,
+    speed: 2000,
     slidesToShow: 5,
     slidesToScroll: 1,
     autoplay: true,
