@@ -6,6 +6,7 @@ import Featured from "./components/Featured";
 import FeaturedBanner from "./components/FeaturedBanner";
 import HotDeals from "./components/HotDeals";
 import Navbar from "./components/Navbar";
+import Newsletter from "./components/Newsletter";
 import PopularProducts from "./components/PopularProducts";
 import SocialsBanner from "./components/SocialsBanner";
 
@@ -22,6 +23,7 @@ function App() {
       <FeaturedBanner />
       <CompaniesVector />
       <SocialsBanner />
+      <Newsletter />
     </>
   );
 }
