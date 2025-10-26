@@ -1,4 +1,5 @@
 const Category = require("../models/category.model");
+const Product = require("../models/product.model");
 
 // Create category
 exports.createCategory = async (req, res, next) => {
@@ -27,7 +28,28 @@ exports.createCategory = async (req, res, next) => {
 exports.getCategories = async (req, res, next) => {
   try {
     const categories = await Category.find().sort({ name: 1 });
-    res.json(categories);
+
+    // Get counts for each category
+    const categoriesWithCounts = await Promise.all(
+      categories.map(async (category) => {
+        const productCount = await Product.countDocuments({
+          category: category._id,
+        });
+        return {
+          _id: category._id,
+          name: category.name,
+          slug: category.slug,
+          productCount,
+        };
+      }),
+    );
+
+    // Filter out categories with 0 products
+    const filteredCategories = categoriesWithCounts.filter(
+      (cat) => cat.productCount > 0,
+    );
+
+    res.json(filteredCategories);
   } catch (err) {
     next(err);
   }

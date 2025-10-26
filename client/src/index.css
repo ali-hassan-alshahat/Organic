@@ -46,7 +46,7 @@
 }
 * {
   box-sizing: border-box;
-  scroll-behavior: auto;
+  scroll-behavior: smooth;
 }
 body {
   font-family: "Poppins", sans-serif;
