@@ -2,6 +2,7 @@ import axios from "axios";
 import DynamicBreadcrumb from "../components/DynamicBreadcrumb";
 import React, { useEffect, useMemo, useState } from "react";
 import { motion } from "motion/react";
+import { useLocation } from "react-router-dom";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -27,17 +28,23 @@ const Shop = () => {
   });
   const [currentPage, setCurrentPage] = useState(1);
   const [productsPerPage] = useState(9);
-
   const { quickView, openQuickView, closeQuickView } = useQuickView();
+  const location = useLocation();
+  const queryParams = new URLSearchParams(location.search);
+  const searchQuery = queryParams.get("search") || "";
 
   useEffect(() => {
     const fetchProducts = async () => {
       try {
         setLoading(true);
-        const res = await axios.get("http://localhost:8000/api/products");
-        const products = res.data.results?.products;
+        const url = searchQuery
+          ? `http://localhost:8000/api/products?search=${encodeURIComponent(
+              searchQuery,
+            )}`
+          : "http://localhost:8000/api/products";
+        const res = await axios.get(url);
+        const products = res.data.results?.products || [];
         setData(products);
-        console.log(products);
       } catch (err) {
         console.error("Failed to fetch products:", err);
       } finally {
@@ -55,7 +62,7 @@ const Shop = () => {
     };
     fetchProducts();
     fetchCategories();
-  }, []);
+  }, [searchQuery]);
 
   const filteredProducts = useMemo(() => {
     let filtered = data.filter((product) => {
@@ -138,6 +145,10 @@ const Shop = () => {
       rating: 0,
     });
     setSortBy("newest");
+    window.scrollTo({
+      top: 0,
+      behavior: "smooth",
+    });
   };
 
   if (loading) {

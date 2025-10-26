@@ -63,6 +63,13 @@ exports.getProducts = async (req, res) => {
     if (req.query.isFeatured)
       filter.isFeatured = req.query.isFeatured === "true";
     if (req.query.isPopular) filter.isPopular = req.query.isPopular === "true";
+    if (req.query.search) {
+      const keyword = req.query.search.trim();
+      filter.$or = [
+        { name: { $regex: keyword, $options: "i" } },
+        { description: { $regex: keyword, $options: "i" } },
+      ];
+    }
     const products = await Product.find(filter)
       .populate("category", "name slug")
       .sort({ createdAt: -1 });

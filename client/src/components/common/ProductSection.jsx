@@ -1,7 +1,7 @@
 import React from "react";
 import { motion } from "motion/react";
 import Skeleton from "react-loading-skeleton";
-import ProductCard from "./Shop/ProductCard";
+import ProductCard from "../Shop/ProductCard";
 
 const ProductSection = ({
   title,

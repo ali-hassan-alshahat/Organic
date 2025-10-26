@@ -1,6 +1,6 @@
 import axios from "axios";
 import React, { useEffect, useState } from "react";
-import ProductSection from "../components/ProductSection";
+import ProductSection from "./common/ProductSection";
 import QuickViewModal from "../components/common/QuickViewModal";
 import { useQuickView } from "../hooks/useQuickView";
 
