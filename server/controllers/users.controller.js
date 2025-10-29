@@ -1,4 +1,3 @@
-// controllers/users.controller.js
 const User = require("../models/users.model");
 const bcrypt = require("bcrypt");
 const generateJWT = require("../utils/generate.JWT");

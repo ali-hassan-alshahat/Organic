@@ -2,7 +2,6 @@ const User = require("../models/users.model");
 const Product = require("../models/product.model");
 const { successResponse, errorResponse } = require("../utils/responseHandler");
 
-// Add product to wishlist
 exports.addToWishlist = async (req, res) => {
   try {
     const { productId } = req.body;
@@ -37,7 +36,6 @@ exports.addToWishlist = async (req, res) => {
   }
 };
 
-// Get user's wishlist
 exports.getWishlist = async (req, res) => {
   try {
     const user = await User.findById(req.user._id)
@@ -57,7 +55,6 @@ exports.getWishlist = async (req, res) => {
   }
 };
 
-// Remove item from wishlist
 exports.removeFromWishlist = async (req, res) => {
   try {
     const { productId } = req.params;
@@ -87,7 +84,6 @@ exports.removeFromWishlist = async (req, res) => {
   }
 };
 
-// Clear entire wishlist
 exports.clearWishlist = async (req, res) => {
   try {
     const user = await User.findById(req.user._id);
@@ -104,7 +100,6 @@ exports.clearWishlist = async (req, res) => {
   }
 };
 
-// Move wishlist item to cart
 exports.moveToCart = async (req, res) => {
   try {
     const { productId } = req.body;
@@ -123,7 +118,6 @@ exports.moveToCart = async (req, res) => {
     );
 
     if (cartItem) {
-      // If already in cart, just remove from wishlist
       user.wishlist = user.wishlist.filter(
         (item) => item.productId.toString() !== productId,
       );
@@ -134,7 +128,6 @@ exports.moveToCart = async (req, res) => {
         "Product moved successfully",
       );
     }
-    // Add to cart and remove from wishlist
     user.cart.push({
       productId,
       quantity: 1,

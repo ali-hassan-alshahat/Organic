@@ -1,6 +1,13 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate, Link } from "react-router-dom";
-import { authService } from "../services/auth.service.js";
+import { useDispatch, useSelector } from "react-redux";
+import {
+  loginUser,
+  selectAuthLoading,
+  selectAuthError,
+  selectIsAuthenticated,
+  clearError,
+} from "../rtk/slices/authSlice";
 import DynamicBreadcrumb from "@/components/DynamicBreadcrumb.jsx";
 import toast from "react-hot-toast";
 
@@ -10,8 +17,22 @@ const Login = () => {
     password: "",
   });
   const [errors, setErrors] = useState({});
-  const [loading, setLoading] = useState(false);
+  const dispatch = useDispatch();
   const navigate = useNavigate();
+  const loading = useSelector(selectAuthLoading);
+  const authError = useSelector(selectAuthError);
+  const isAuthenticated = useSelector(selectIsAuthenticated);
+
+  // Redirect if already authenticated
+  useEffect(() => {
+    if (isAuthenticated) {
+      navigate("/", { replace: true });
+    }
+  }, [isAuthenticated, navigate]);
+
+  useEffect(() => {
+    dispatch(clearError());
+  }, [dispatch]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -19,9 +40,11 @@ const Login = () => {
     if (errors[name]) {
       setErrors({ ...errors, [name]: "" });
     }
+    if (authError) {
+      dispatch(clearError());
+    }
   };
 
-  // PROFESSIONAL MANUAL VALIDATION
   const validateField = (name, value) => {
     switch (name) {
       case "email":
@@ -49,37 +72,28 @@ const Login = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    // Validate all fields before submitting
     const newErrors = {};
     Object.keys(formData).forEach((key) => {
       const error = validateField(key, formData[key]);
       if (error) newErrors[key] = error;
     });
-
     if (Object.keys(newErrors).length > 0) {
       setErrors(newErrors);
       toast.error("Please fix the validation errors");
       return;
     }
-
-    setLoading(true);
-
     try {
-      const result = await authService.login(formData);
-      if (result.success) {
-        toast.success("Logged in successfully! 🎉");
-        navigate("/");
-      } else {
-        toast.error(result.message || "Login failed");
-        setErrors({ general: result.message });
-      }
+      await dispatch(loginUser(formData)).unwrap();
+      toast.success("Logged in successfully! 🎉");
     } catch (error) {
-      toast.error("An error occurred while logging in");
-      setErrors({ general: "An error occurred while logging in" });
-    } finally {
-      setLoading(false);
+      console.error("Login failed:", error);
     }
   };
+
+  // Don't render if already authenticated
+  if (isAuthenticated) {
+    return null;
+  }
 
   return (
     <>
@@ -98,10 +112,10 @@ const Login = () => {
             <p className="text-gray-600">Sign in to your account</p>
           </div>
 
-          {errors.general && (
+          {authError && (
             <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg mb-6 flex items-center gap-2">
               <span>⚠</span>
-              {errors.general}
+              {authError}
             </div>
           )}
 

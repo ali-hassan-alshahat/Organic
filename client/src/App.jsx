@@ -10,8 +10,31 @@ import Faq from "./pages/Faq";
 import ProductDetails from "./pages/ProductDetails";
 import Register from "./pages/Register";
 import Login from "./pages/Login";
+import { useEffect } from "react";
+import { useDispatch, useSelector } from "react-redux";
+import { initializeAuth } from "./rtk/slices/authSlice";
+import { fetchCart, switchToGuestCart } from "./rtk/slices/cartSlice";
+import { fetchWishlist } from "./rtk/slices/wishlistSlice";
 
 function App() {
+  const dispatch = useDispatch();
+  const { user, token } = useSelector((state) => state.auth);
+
+  useEffect(() => {
+    dispatch(initializeAuth());
+  }, [dispatch]);
+
+  useEffect(() => {
+    if (token && user) {
+      dispatch(fetchCart());
+    } else {
+      dispatch(switchToGuestCart());
+    }
+  }, [dispatch, token, user]);
+
+  useEffect(() => {
+    dispatch(fetchWishlist());
+  }, [dispatch]);
   let routers = createBrowserRouter([
     {
       path: "/",
@@ -41,7 +64,7 @@ function App() {
         toastOptions={{
           duration: 4000,
           style: {
-            background: "var(--main-primary, #059669)", // Use your CSS variable
+            background: "var(--main-primary, #059669)",
             color: "#fff",
             borderRadius: "8px",
             fontWeight: "500",
@@ -60,7 +83,7 @@ function App() {
           error: {
             duration: 4000,
             style: {
-              background: "var(--hard-primary, #dc2626)", // Your error color
+              background: "var(--hard-primary, #dc2626)",
             },
             iconTheme: {
               primary: "#fff",

@@ -1,6 +1,13 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate, Link } from "react-router-dom";
-import { authService } from "../services/auth.service.js";
+import { useDispatch, useSelector } from "react-redux";
+import {
+  registerUser,
+  selectAuthLoading,
+  selectAuthError,
+  selectIsAuthenticated,
+  clearError,
+} from "../rtk/slices/authSlice";
 import DynamicBreadcrumb from "@/components/DynamicBreadcrumb.jsx";
 import toast from "react-hot-toast";
 
@@ -12,14 +19,30 @@ const Register = () => {
     confirmPassword: "",
   });
   const [errors, setErrors] = useState({});
-  const [loading, setLoading] = useState(false);
+  const dispatch = useDispatch();
   const navigate = useNavigate();
+
+  const loading = useSelector(selectAuthLoading);
+  const authError = useSelector(selectAuthError);
+  const isAuthenticated = useSelector(selectIsAuthenticated);
+  // Redirect if already authenticated
+  useEffect(() => {
+    if (isAuthenticated) {
+      navigate("/", { replace: true });
+    }
+  }, [isAuthenticated, navigate]);
+  useEffect(() => {
+    dispatch(clearError());
+  }, [dispatch]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData({ ...formData, [name]: value });
     if (errors[name]) {
       setErrors({ ...errors, [name]: "" });
+    }
+    if (authError) {
+      dispatch(clearError());
     }
   };
 
@@ -65,28 +88,20 @@ const Register = () => {
       toast.error("Please fix the validation errors");
       return;
     }
-    setLoading(true);
+
     try {
-      const result = await authService.register({
-        name: formData.name,
-        email: formData.email,
-        password: formData.password,
-        confirmPassword: formData.confirmPassword,
-      });
-      if (result.success) {
-        toast.success("Account created successfully! 🎉");
-        navigate("/");
-      } else {
-        toast.error(result.message || "Registration failed");
-        setErrors({ general: result.message });
-      }
+      const { ...registerData } = formData;
+      await dispatch(registerUser(registerData)).unwrap();
+      toast.success("Account created successfully! 🎉");
     } catch (error) {
-      toast.error("An error occurred while registering");
-      setErrors({ general: "An error occurred while registering" });
-    } finally {
-      setLoading(false);
+      console.error("Registration failed:", error);
     }
   };
+
+  // Don't render if already authenticated
+  if (isAuthenticated) {
+    return null;
+  }
 
   return (
     <>
@@ -106,10 +121,10 @@ const Register = () => {
               Join us today and start your journey
             </p>
           </div>
-          {errors.general && (
+          {authError && (
             <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg mb-6 flex items-center gap-2">
               <span>⚠</span>
-              {errors.general}
+              {authError}
             </div>
           )}
           <form onSubmit={handleSubmit} className="space-y-6">

@@ -1,16 +1,35 @@
-const API_BASE = "http://localhost:8000/api";
+const BASE_URL = "http://localhost:8000/api";
 
-export const apiService = async (url, options = {}) => {
-  const config = {
-    headers: {
-      "Content-Type": "application/json",
-      ...options.headers,
-    },
-    ...options,
+export const apiService = async (endpoint, options = {}) => {
+  const { method = "GET", body, headers = {}, ...rest } = options;
+  const token = localStorage.getItem("token");
+
+  const defaultHeaders = {
+    "Content-Type": "application/json",
+    ...headers,
   };
-  if (config.body) {
-    config.body = JSON.stringify(config.body);
+  // Add authorization header if token exists
+  if (token) {
+    defaultHeaders.Authorization = `Bearer ${token}`;
   }
-  const response = await fetch(`${API_BASE}${url}`, config);
-  return await response.json();
+  const config = {
+    method,
+    headers: defaultHeaders,
+    ...rest,
+  };
+  // Add body for non-GET requests
+  if (body && method !== "GET") {
+    config.body = JSON.stringify(body);
+  }
+  try {
+    const response = await fetch(`${BASE_URL}${endpoint}`, config);
+    const data = await response.json();
+    if (!response.ok) {
+      throw new Error(data.message || `HTTP error! status: ${response.status}`);
+    }
+    return data;
+  } catch (error) {
+    console.error("API Service Error:", error);
+    throw error;
+  }
 };

@@ -1,6 +1,6 @@
 import React from "react";
 import { NavLink } from "react-router-dom";
-import { PhoneCall } from "lucide-react";
+import { PhoneCall, ShoppingCart } from "lucide-react";
 
 const Navigation = () => {
   const navItems = [
@@ -37,6 +37,14 @@ const Navigation = () => {
                 )}
               </NavLink>
             ))}
+            <NavLink
+              to="/cart"
+              className={({ isActive }) =>
+                `relative flex items-center gap-2 font-medium text-gray-700 transition-all duration-200 hover:text-green-600 text-base ${
+                  isActive ? "text-green-600" : ""
+                }`
+              }
+            ></NavLink>
           </div>
           <div className="flex items-center gap-2 text-gray-600">
             <PhoneCall size={16} className="text-green-500" />

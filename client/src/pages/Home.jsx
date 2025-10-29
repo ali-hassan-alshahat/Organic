@@ -1,4 +1,3 @@
-// pages/Home.jsx
 import React from "react";
 import BannerTop from "../components/BannerTop";
 import CompaniesVector from "../components/CompaniesVector";

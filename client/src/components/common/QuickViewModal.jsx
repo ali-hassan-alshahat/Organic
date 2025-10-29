@@ -2,9 +2,62 @@ import React from "react";
 import { motion } from "motion/react";
 import { X, ShoppingBag, Heart, Truck, Shield } from "lucide-react";
 import { renderStars } from "../../utils/renderStars";
+import { addItemToCart, addToCart } from "@/rtk/slices/cartSlice";
+import {
+  addToWishlist,
+  removeFromWishlist,
+  selectIsInWishlist,
+} from "@/rtk/slices/wishlistSlice";
+import { useDispatch, useSelector } from "react-redux";
+import { useNavigate } from "react-router-dom";
+import { selectIsAuthenticated } from "@/rtk/slices/authSlice";
+import toast from "react-hot-toast";
 
 const QuickViewModal = ({ quickView, onClose }) => {
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
+  const isAuthenticated = useSelector(selectIsAuthenticated);
+
+  // Get wishlist state
+  const isInWishlist = useSelector((state) =>
+    selectIsInWishlist(state, quickView?._id),
+  );
+  const wishlistLoading = useSelector((state) => state.wishlist.loading);
+
   if (!quickView) return null;
+
+  const handleAddToCart = async () => {
+    try {
+      dispatch(addItemToCart(quickView));
+      await dispatch(
+        addToCart({ productId: quickView._id, quantity: 1 }),
+      ).unwrap();
+      toast.success(`Added ${quickView.name} to cart successfully`);
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  const handleWishlistToggle = async () => {
+    if (!isAuthenticated) {
+      toast.error("Please login to manage your wishlist");
+      navigate("/login");
+      return;
+    }
+
+    try {
+      if (isInWishlist) {
+        await dispatch(removeFromWishlist(quickView._id)).unwrap();
+        toast.success(`${quickView.name} Removed from wishlist`);
+      } else {
+        await dispatch(addToWishlist(quickView._id)).unwrap();
+        toast.success(`${quickView.name} Added to wishlist`);
+      }
+    } catch (error) {
+      console.error("Wishlist toggle error:", error);
+      toast.error(error.payload || "Something went wrong");
+    }
+  };
 
   return (
     <motion.div
@@ -141,16 +194,39 @@ const QuickViewModal = ({ quickView, onClose }) => {
                 </div>
                 <div className="flex gap-4 pt-4">
                   <button
+                    onClick={handleAddToCart}
                     className="flex-1 bg-green-500 hover:bg-green-600 text-white py-4 px-8 rounded-xl font-semibold text-lg transition-colors hover:shadow-lg cursor-pointer flex items-center justify-center gap-3 disabled:opacity-50 disabled:cursor-not-allowed"
                     disabled={quickView.countInStock === 0}
                   >
                     <ShoppingBag size={24} />
                     Add to Cart
                   </button>
-                  <button className="p-4 border-2 border-gray-300 hover:border-[var(--main-primary)] hover:bg-gray-50 cursor-pointer rounded-xl transition-colors">
-                    <Heart size={24} className="text-gray-600" />
+                  <button
+                    onClick={handleWishlistToggle}
+                    disabled={wishlistLoading}
+                    className={`p-4 border-2 rounded-xl transition-colors cursor-pointer flex items-center justify-center ${
+                      isInWishlist
+                        ? "border-red-300 bg-red-50 hover:bg-red-100"
+                        : "border-gray-300 hover:border-[var(--main-primary)] hover:bg-gray-50"
+                    } ${
+                      wishlistLoading ? "opacity-50 cursor-not-allowed" : ""
+                    }`}
+                  >
+                    <Heart
+                      size={24}
+                      className={
+                        isInWishlist
+                          ? "fill-red-500 text-red-500"
+                          : "text-gray-600"
+                      }
+                    />
                   </button>
                 </div>
+                {quickView.countInStock === 0 && (
+                  <span className="text-xs text-red-500 block mt-1 text-center">
+                    Out of Stock
+                  </span>
+                )}
               </div>
             </div>
           </div>

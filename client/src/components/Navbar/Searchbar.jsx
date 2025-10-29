@@ -43,7 +43,7 @@ const SearchBar = ({
             searchQuery,
           )}&limit=6`,
         );
-        const products = response.data.results?.products || [];
+        const products = response.data.data?.products || [];
         setSearchSuggestions(products);
       } catch (error) {
         console.error("Failed to fetch search suggestions:", error);
