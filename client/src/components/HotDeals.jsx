@@ -14,9 +14,9 @@ const HotDeals = () => {
       try {
         setLoading(true);
         const res = await axios.get(
-          "http://localhost:8000/api/products?isFeatured=true",
+          "http://localhost:8000/api/products?isHotDeal=true",
         );
-        const products = res.data.results?.products;
+        const products = res.data.data?.products;
         setData(products);
       } catch (err) {
         console.error("Failed to fetch products:", err);
@@ -30,7 +30,7 @@ const HotDeals = () => {
   return (
     <>
       <ProductSection
-        title="Featured Products"
+        title="Hot Deals"
         data={data}
         loading={loading}
         onQuickView={openQuickView}
