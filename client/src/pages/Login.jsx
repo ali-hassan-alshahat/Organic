@@ -2,7 +2,6 @@ import React, { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { authService } from "../services/auth.service.js";
 import DynamicBreadcrumb from "@/components/DynamicBreadcrumb.jsx";
-import { loginSchema } from "@/schemas/auth.schemas.js";
 import toast from "react-hot-toast";
 
 const Login = () => {
@@ -22,17 +21,22 @@ const Login = () => {
     }
   };
 
+  // PROFESSIONAL MANUAL VALIDATION
   const validateField = (name, value) => {
-    try {
-      if (name === "email" || name === "password") {
-        loginSchema.pick({ [name]: true }).parse({ [name]: value });
-      }
-      return "";
-    } catch (error) {
-      if (error.errors) {
-        return error.errors[0].message;
-      }
-      return "Invalid value";
+    switch (name) {
+      case "email":
+        if (!value.trim()) return "Email is required";
+        if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value))
+          return "Please enter a valid email address";
+        return "";
+
+      case "password":
+        if (!value) return "Password is required";
+        if (value.length < 6) return "Password must be at least 6 characters";
+        return "";
+
+      default:
+        return "";
     }
   };
 
@@ -44,10 +48,23 @@ const Login = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+
+    // Validate all fields before submitting
+    const newErrors = {};
+    Object.keys(formData).forEach((key) => {
+      const error = validateField(key, formData[key]);
+      if (error) newErrors[key] = error;
+    });
+
+    if (Object.keys(newErrors).length > 0) {
+      setErrors(newErrors);
+      toast.error("Please fix the validation errors");
+      return;
+    }
+
+    setLoading(true);
+
     try {
-      loginSchema.parse(formData);
-      setErrors({});
-      setLoading(true);
       const result = await authService.login(formData);
       if (result.success) {
         toast.success("Logged in successfully! 🎉");
@@ -57,16 +74,8 @@ const Login = () => {
         setErrors({ general: result.message });
       }
     } catch (error) {
-      if (error.errors) {
-        const newErrors = {};
-        error.errors.forEach((err) => {
-          newErrors[err.path[0]] = err.message;
-        });
-        setErrors(newErrors);
-      } else {
-        toast.error("An error occurred while logging in");
-        setErrors({ general: "An error occurred while logging in" });
-      }
+      toast.error("An error occurred while logging in");
+      setErrors({ general: "An error occurred while logging in" });
     } finally {
       setLoading(false);
     }
@@ -88,12 +97,14 @@ const Login = () => {
             </h2>
             <p className="text-gray-600">Sign in to your account</p>
           </div>
+
           {errors.general && (
             <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg mb-6 flex items-center gap-2">
               <span>⚠</span>
               {errors.general}
             </div>
           )}
+
           <form onSubmit={handleSubmit} className="space-y-6">
             <div>
               <label
@@ -115,9 +126,13 @@ const Login = () => {
                 }`}
               />
               {errors.email && (
-                <p className="text-red-500 text-sm mt-1">{errors.email}</p>
+                <p className="text-red-500 text-sm mt-1 flex items-center gap-1">
+                  <span>⚠</span>
+                  {errors.email}
+                </p>
               )}
             </div>
+
             <div>
               <label
                 htmlFor="password"
@@ -138,9 +153,13 @@ const Login = () => {
                 }`}
               />
               {errors.password && (
-                <p className="text-red-500 text-sm mt-1">{errors.password}</p>
+                <p className="text-red-500 text-sm mt-1 flex items-center gap-1">
+                  <span>⚠</span>
+                  {errors.password}
+                </p>
               )}
             </div>
+
             <button
               type="submit"
               disabled={loading}
@@ -156,6 +175,7 @@ const Login = () => {
               )}
             </button>
           </form>
+
           <div className="text-center mt-8 pt-6 border-t border-gray-200">
             <p className="text-gray-600 text-sm">
               Don't have an account?{" "}

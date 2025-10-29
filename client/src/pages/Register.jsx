@@ -2,7 +2,6 @@ import React, { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { authService } from "../services/auth.service.js";
 import DynamicBreadcrumb from "@/components/DynamicBreadcrumb.jsx";
-import { registerSchema } from "@/schemas/auth.schemas.js";
 import toast from "react-hot-toast";
 
 const Register = () => {
@@ -25,21 +24,26 @@ const Register = () => {
   };
 
   const validateField = (name, value) => {
-    try {
-      if (
-        name === "name" ||
-        name === "email" ||
-        name === "password" ||
-        name === "confirmPassword"
-      ) {
-        registerSchema.pick({ [name]: true }).parse({ [name]: value });
-      }
-      return "";
-    } catch (error) {
-      if (error.errors && error.errors[0]) {
-        return error.errors[0].message;
-      }
-      return "Invalid value";
+    switch (name) {
+      case "name":
+        if (!value.trim()) return "Full name is required";
+        if (value.length < 2) return "Name must be at least 2 characters";
+        return "";
+      case "email":
+        if (!value.trim()) return "Email is required";
+        if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value))
+          return "Please enter a valid email address";
+        return "";
+      case "password":
+        if (!value) return "Password is required";
+        if (value.length < 6) return "Password must be at least 6 characters";
+        return "";
+      case "confirmPassword":
+        if (!value) return "Please confirm your password";
+        if (value !== formData.password) return "Passwords do not match";
+        return "";
+      default:
+        return "";
     }
   };
 
@@ -51,50 +55,33 @@ const Register = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-
+    const newErrors = {};
+    Object.keys(formData).forEach((key) => {
+      const error = validateField(key, formData[key]);
+      if (error) newErrors[key] = error;
+    });
+    if (Object.keys(newErrors).length > 0) {
+      setErrors(newErrors);
+      toast.error("Please fix the validation errors");
+      return;
+    }
+    setLoading(true);
     try {
-      registerSchema.parse(formData);
-      setErrors({});
-      setLoading(true);
       const result = await authService.register({
         name: formData.name,
         email: formData.email,
         password: formData.password,
       });
       if (result.success) {
-        toast.success("Account created successfully! 🎉", {
-          duration: 4000,
-          position: "top-right",
-          icon: "👏",
-        });
+        toast.success("Account created successfully! 🎉");
         navigate("/");
       } else {
-        toast.error(result.message || "Registration failed", {
-          duration: 4000,
-          position: "top-right",
-        });
+        toast.error(result.message || "Registration failed");
         setErrors({ general: result.message });
       }
     } catch (error) {
-      if (error.errors) {
-        const newErrors = {};
-        error.errors.forEach((err) => {
-          newErrors[err.path[0]] = err.message;
-        });
-        setErrors(newErrors);
-        if (error.errors[0]) {
-          toast.error(error.errors[0].message, {
-            duration: 4000,
-            position: "top-right",
-          });
-        }
-      } else {
-        toast.error("An error occurred while registering", {
-          duration: 4000,
-          position: "top-right",
-        });
-        setErrors({ general: "An error occurred while registering" });
-      }
+      toast.error("An error occurred while registering");
+      setErrors({ general: "An error occurred while registering" });
     } finally {
       setLoading(false);
     }
