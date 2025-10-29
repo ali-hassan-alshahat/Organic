@@ -7,8 +7,8 @@ import About from "./pages/About";
 import { Contact } from "lucide-react";
 import Faq from "./pages/Faq";
 import ProductDetails from "./pages/ProductDetails";
-import SignIn from "./pages/SignIn";
 import Register from "./pages/Register";
+import Login from "./pages/Login";
 
 function App() {
   let routers = createBrowserRouter([
@@ -26,7 +26,7 @@ function App() {
         { path: "/contact", element: <Contact /> },
         { path: "/faq", element: <Faq /> },
         { path: "/product/:id", element: <ProductDetails /> },
-        { path: "/signin", element: <SignIn /> },
+        { path: "/login", element: <Login /> },
         { path: "/register", element: <Register /> },
       ],
     },

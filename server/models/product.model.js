@@ -1,4 +1,3 @@
-// models/product.model.js
 const mongoose = require("mongoose");
 
 // review sub-schema

@@ -2,15 +2,13 @@ import React, { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { authService } from "../services/auth.service.js";
 import DynamicBreadcrumb from "@/components/DynamicBreadcrumb.jsx";
-import { registerSchema } from "@/schemas/auth.schemas.js";
+import { loginSchema } from "@/schemas/auth.schemas.js";
 import toast from "react-hot-toast";
 
-const Register = () => {
+const Login = () => {
   const [formData, setFormData] = useState({
-    name: "",
     email: "",
     password: "",
-    confirmPassword: "",
   });
   const [errors, setErrors] = useState({});
   const [loading, setLoading] = useState(false);
@@ -26,17 +24,12 @@ const Register = () => {
 
   const validateField = (name, value) => {
     try {
-      if (
-        name === "name" ||
-        name === "email" ||
-        name === "password" ||
-        name === "confirmPassword"
-      ) {
-        registerSchema.pick({ [name]: true }).parse({ [name]: value });
+      if (name === "email" || name === "password") {
+        loginSchema.pick({ [name]: true }).parse({ [name]: value });
       }
       return "";
     } catch (error) {
-      if (error.errors && error.errors[0]) {
+      if (error.errors) {
         return error.errors[0].message;
       }
       return "Invalid value";
@@ -51,28 +44,16 @@ const Register = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-
     try {
-      registerSchema.parse(formData);
+      loginSchema.parse(formData);
       setErrors({});
       setLoading(true);
-      const result = await authService.register({
-        name: formData.name,
-        email: formData.email,
-        password: formData.password,
-      });
+      const result = await authService.login(formData);
       if (result.success) {
-        toast.success("Account created successfully! 🎉", {
-          duration: 4000,
-          position: "top-right",
-          icon: "👏",
-        });
+        toast.success("Logged in successfully! 🎉");
         navigate("/");
       } else {
-        toast.error(result.message || "Registration failed", {
-          duration: 4000,
-          position: "top-right",
-        });
+        toast.error(result.message || "Login failed");
         setErrors({ general: result.message });
       }
     } catch (error) {
@@ -82,18 +63,9 @@ const Register = () => {
           newErrors[err.path[0]] = err.message;
         });
         setErrors(newErrors);
-        if (error.errors[0]) {
-          toast.error(error.errors[0].message, {
-            duration: 4000,
-            position: "top-right",
-          });
-        }
       } else {
-        toast.error("An error occurred while registering", {
-          duration: 4000,
-          position: "top-right",
-        });
-        setErrors({ general: "An error occurred while registering" });
+        toast.error("An error occurred while logging in");
+        setErrors({ general: "An error occurred while logging in" });
       }
     } finally {
       setLoading(false);
@@ -105,18 +77,16 @@ const Register = () => {
       <DynamicBreadcrumb
         items={[
           { label: "Home", href: "/" },
-          { label: "Register", href: "/register" },
+          { label: "Login", href: "/login" },
         ]}
       />
       <div className="min-h-screen flex items-center justify-center p-4 my-8">
         <div className="bg-white rounded-2xl shadow-2xl p-8 w-full max-w-md transition-transform duration-300 hover:translate-y-[-5px]">
           <div className="text-center mb-8">
             <h2 className="text-3xl font-bold text-gray-800 mb-2">
-              Create Your Account
+              Welcome Back
             </h2>
-            <p className="text-gray-600">
-              Join us today and start your journey
-            </p>
+            <p className="text-gray-600">Sign in to your account</p>
           </div>
           {errors.general && (
             <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg mb-6 flex items-center gap-2">
@@ -125,32 +95,6 @@ const Register = () => {
             </div>
           )}
           <form onSubmit={handleSubmit} className="space-y-6">
-            <div>
-              <label
-                htmlFor="name"
-                className="block text-sm font-medium text-gray-700 mb-2"
-              >
-                Full Name
-              </label>
-              <input
-                id="name"
-                type="text"
-                name="name"
-                value={formData.name}
-                onChange={handleChange}
-                onBlur={handleBlur}
-                placeholder="Enter your full name"
-                className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-[var(--main-primary)] focus:border-transparent transition-all duration-200 bg-gray-50 focus:bg-white ${
-                  errors.name ? "border-red-500" : "border-gray-300"
-                }`}
-              />
-              {errors.name && (
-                <p className="text-red-500 text-sm mt-1 flex items-center gap-1">
-                  <span>⚠</span>
-                  {errors.name}
-                </p>
-              )}
-            </div>
             <div>
               <label
                 htmlFor="email"
@@ -171,10 +115,7 @@ const Register = () => {
                 }`}
               />
               {errors.email && (
-                <p className="text-red-500 text-sm mt-1 flex items-center gap-1">
-                  <span>⚠</span>
-                  {errors.email}
-                </p>
+                <p className="text-red-500 text-sm mt-1">{errors.email}</p>
               )}
             </div>
             <div>
@@ -191,42 +132,13 @@ const Register = () => {
                 value={formData.password}
                 onChange={handleChange}
                 onBlur={handleBlur}
-                placeholder="Create a password"
+                placeholder="Enter your password"
                 className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-[var(--main-primary)] focus:border-transparent transition-all duration-200 bg-gray-50 focus:bg-white ${
                   errors.password ? "border-red-500" : "border-gray-300"
                 }`}
               />
               {errors.password && (
-                <p className="text-red-500 text-sm mt-1 flex items-center gap-1">
-                  <span>⚠</span>
-                  {errors.password}
-                </p>
-              )}
-            </div>
-            <div>
-              <label
-                htmlFor="confirmPassword"
-                className="block text-sm font-medium text-gray-700 mb-2"
-              >
-                Confirm Password
-              </label>
-              <input
-                id="confirmPassword"
-                type="password"
-                name="confirmPassword"
-                value={formData.confirmPassword}
-                onChange={handleChange}
-                onBlur={handleBlur}
-                placeholder="Confirm your password"
-                className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-[var(--main-primary)] focus:border-transparent transition-all duration-200 bg-gray-50 focus:bg-white ${
-                  errors.confirmPassword ? "border-red-500" : "border-gray-300"
-                }`}
-              />
-              {errors.confirmPassword && (
-                <p className="text-red-500 text-sm mt-1 flex items-center gap-1">
-                  <span>⚠</span>
-                  {errors.confirmPassword}
-                </p>
+                <p className="text-red-500 text-sm mt-1">{errors.password}</p>
               )}
             </div>
             <button
@@ -237,21 +149,21 @@ const Register = () => {
               {loading ? (
                 <>
                   <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                  Creating Account...
+                  Signing In...
                 </>
               ) : (
-                "Create Account"
+                "Sign In"
               )}
             </button>
           </form>
           <div className="text-center mt-8 pt-6 border-t border-gray-200">
             <p className="text-gray-600 text-sm">
-              Already have an account?{" "}
+              Don't have an account?{" "}
               <Link
-                to="/login"
+                to="/register"
                 className="text-[var(--main-primary)] font-semibold hover:text-[var(--hard-primary)] transition-colors duration-200"
               >
-                Login here
+                Create one here
               </Link>
             </p>
           </div>
@@ -261,4 +173,4 @@ const Register = () => {
   );
 };
 
-export default Register;
+export default Login;

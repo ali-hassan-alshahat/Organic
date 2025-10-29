@@ -5,9 +5,8 @@ exports.successResponse = (
   statusCode = 200,
 ) => {
   return res.status(statusCode).json({
-    status: "success",
+    success: true,
     message,
-    results: data,
     data,
   });
 };

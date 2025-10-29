@@ -5,7 +5,7 @@ import { Link } from "react-router-dom";
 const TopBar = () => {
   return (
     <div className="bg-gradient-to-r from-gray-900 to-gray-800 py-2 text-white">
-      <div className="center flex flex-col sm:flex-row justify-between items-center gap-2 sm:gap-0">
+      <div className="center !py-2 flex flex-col sm:flex-row justify-between items-center gap-2 sm:gap-0">
         <div className="flex items-center gap-2">
           <MapPin size={14} className="text-green-400" />
           <span className="text-gray-300 text-xs sm:text-sm">
@@ -19,10 +19,10 @@ const TopBar = () => {
               className="group-hover:text-green-400 transition-colors"
             />
             <Link
-              to={"/signin"}
+              to={"/login"}
               className="text-xs sm:text-sm hover:text-white transition-colors"
             >
-              Sign In
+              Login
             </Link>
             <span>/</span>
             <Link

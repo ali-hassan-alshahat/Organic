@@ -2,7 +2,7 @@ import React from "react";
 import { NavLink } from "react-router-dom";
 import { PhoneCall } from "lucide-react";
 
-const Navigation = ({ isMobile }) => {
+const Navigation = () => {
   const navItems = [
     { label: "Home", href: "/" },
     { label: "Shop", href: "/shop" },
@@ -12,10 +12,8 @@ const Navigation = ({ isMobile }) => {
     { label: "Faq", href: "/faq" },
   ];
 
-  if (isMobile) return null;
-
   return (
-    <div className="border-t border-gray-200 bg-white">
+    <div className="hidden lg:block border-t border-gray-200 bg-white">
       <div className="center !py-3">
         <div className="flex items-center justify-between py-3">
           <div className="flex items-center space-x-8">

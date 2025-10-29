@@ -171,7 +171,7 @@ const Shop = () => {
       <motion.div
         initial={{ opacity: 0, y: 50 }}
         animate={{ opacity: 1, y: 0 }}
-        viewport={{ margin: "-50px" }}
+        viewport={{ margin: "-50px", once: true }}
         transition={{ duration: 0.6 }}
         className="center pt-4"
       >

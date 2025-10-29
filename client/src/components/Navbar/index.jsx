@@ -49,7 +49,7 @@ const Navbar = () => {
               isMenuOpen={isMobileMenuOpen}
             />
           </div>
-          <div className="center pb-3 px-4">
+          <div className="center !pb-3 !pt-1 px-4">
             <SearchBar
               searchQuery={searchQuery}
               setSearchQuery={setSearchQuery}
