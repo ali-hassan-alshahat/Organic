@@ -9,16 +9,43 @@ const FilterSidebar = ({
   onRatingChange,
   renderStars,
 }) => {
+  const renderThumb = ({ props, isDragged }) => {
+    const { key, ...restProps } = props;
+    return (
+      <div
+        key={key}
+        {...restProps}
+        className="w-4 h-4 bg-[var(--main-primary)] rounded-full outline-none"
+      />
+    );
+  };
+
+  const renderTrack = ({ props, children }) => {
+    const { key, ...restProps } = props;
+    return (
+      <div
+        key={key}
+        {...restProps}
+        className="h-2 bg-[var(--soft-primary)] rounded-full"
+      >
+        {children}
+      </div>
+    );
+  };
+
   return (
     <div className="lg:col-span-3 md:col-span-4">
       <div className="p-6">
         <h3 className="text-lg font-semibold mb-4">All Categories</h3>
         <form>
           {categories.map((category) => (
-            <div key={category.id} className="mb-4 flex items-center gap-2">
+            <div
+              key={category.id || category._id}
+              className="mb-4 flex items-center gap-2"
+            >
               <input
                 id={category.name}
-                onClick={() => onCategoryChange(category.name)}
+                onChange={() => onCategoryChange(category.name)}
                 type="radio"
                 name="category"
                 checked={filters.category === category.name}
@@ -30,7 +57,7 @@ const FilterSidebar = ({
               >
                 <span>{category.name}</span>
                 <span className="text-sm text-gray-600">
-                  ({category.productCount})
+                  ({category.productCount || 0})
                 </span>
               </label>
             </div>
@@ -47,20 +74,8 @@ const FilterSidebar = ({
             max={100}
             values={filters.priceRange}
             onChange={onPriceChange}
-            renderTrack={({ props, children }) => (
-              <div
-                {...props}
-                className="h-2 bg-[var(--soft-primary)] rounded-full"
-              >
-                {children}
-              </div>
-            )}
-            renderThumb={({ props }) => (
-              <div
-                {...props}
-                className="w-4 h-4 bg-[var(--main-primary)] rounded-full"
-              />
-            )}
+            renderTrack={renderTrack}
+            renderThumb={renderThumb}
           />
           <div className="flex justify-between mt-2 text-sm">
             <span>${filters.priceRange[0]}</span>
@@ -76,7 +91,7 @@ const FilterSidebar = ({
             <div key={rating} className="flex items-center mb-4 gap-2">
               <input
                 id={`rating-${rating}`}
-                onClick={() => onRatingChange(rating.toString())}
+                onChange={() => onRatingChange(rating.toString())}
                 checked={filters.rating === rating.toString()}
                 type="radio"
                 name="rating"
