@@ -15,6 +15,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { initializeAuth } from "./rtk/slices/authSlice";
 import { fetchCart, switchToGuestCart } from "./rtk/slices/cartSlice";
 import { fetchWishlist } from "./rtk/slices/wishlistSlice";
+import AdminLogin from "./pages/AdminLogin";
 
 function App() {
   const dispatch = useDispatch();
@@ -52,6 +53,7 @@ function App() {
         { path: "/product/:id", element: <ProductDetails /> },
         { path: "/login", element: <Login /> },
         { path: "/register", element: <Register /> },
+        { path: "/admin/login", element: <AdminLogin /> },
       ],
     },
   ]);

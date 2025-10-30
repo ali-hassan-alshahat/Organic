@@ -1,4 +1,3 @@
-// server/middleware/validation.middleware.js
 const { z } = require("zod");
 
 const validateRequest = (schema) => {

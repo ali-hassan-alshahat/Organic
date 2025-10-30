@@ -5,6 +5,7 @@ const cors = require("cors");
 const productRoutes = require("./routes/products.routes");
 const categoryRoutes = require("./routes/category.routes");
 const usersRoutes = require("./routes/users.routes");
+const adminRoutes = require("./routes/admin.routes");
 const wishlistRoutes = require("./routes/wishlist.routes");
 const { notFound, errorHandler } = require("./middleware/error.middleware");
 
@@ -20,6 +21,7 @@ app.use(express.json());
 app.use("/api/categories", categoryRoutes);
 app.use("/api/products", productRoutes);
 app.use("/api/users", usersRoutes);
+app.use("/api/admin", adminRoutes);
 app.use("/api/wishlist", wishlistRoutes);
 
 // Health
