@@ -190,7 +190,7 @@ const ProductDetails = () => {
           { label: product.name, href: `/product/${product._id}` },
         ]}
       />
-      <div className="w-full max-w-[100vw] overflow-x-hidden py-6 px-4 sm:px-6">
+      <div className="w-full max-w-[100vw] py-6 px-4 sm:px-6">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 xl:gap-12 items-start py-4 mx-auto max-w-7xl">
           <ProductImageGallery
             product={product}
