@@ -22,7 +22,7 @@ app.use("/api/categories", categoryRoutes);
 app.use("/api/products", productRoutes);
 app.use("/api/users", usersRoutes);
 app.use("/api/admin", adminRoutes);
-app.use("/api/wishlist", wishlistRoutes);
+app.use("/api/users", wishlistRoutes);
 
 // Health
 app.get("/", (req, res) => res.send("Server is running successfully 🚀"));

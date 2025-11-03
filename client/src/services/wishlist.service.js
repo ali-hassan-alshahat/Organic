@@ -3,12 +3,13 @@ import { apiService } from "./api.service";
 export const wishlistService = {
   async addToWishlist(productId) {
     try {
-      const response = await apiService("/wishlist", {
+      const response = await apiService("/users/wishlist", {
         method: "POST",
         body: { productId },
       });
       return response;
     } catch (error) {
+      console.error("Add to wishlist service error:", error);
       return {
         success: false,
         message: error.message,
@@ -18,11 +19,12 @@ export const wishlistService = {
 
   async removeFromWishlist(productId) {
     try {
-      const response = await apiService(`/wishlist/${productId}`, {
+      const response = await apiService(`/users/wishlist/${productId}`, {
         method: "DELETE",
       });
       return response;
     } catch (error) {
+      console.error("Remove from wishlist service error:", error);
       return {
         success: false,
         message: error.message,
@@ -32,11 +34,12 @@ export const wishlistService = {
 
   async getWishlist() {
     try {
-      const response = await apiService("/wishlist", {
+      const response = await apiService("/users/wishlist", {
         method: "GET",
       });
       return response;
     } catch (error) {
+      console.error("Get wishlist service error:", error);
       return {
         success: false,
         message: error.message,
@@ -46,11 +49,12 @@ export const wishlistService = {
 
   async clearWishlist() {
     try {
-      const response = await apiService("/wishlist", {
+      const response = await apiService("/users/wishlist", {
         method: "DELETE",
       });
       return response;
     } catch (error) {
+      console.error("Clear wishlist service error:", error);
       return {
         success: false,
         message: error.message,
@@ -60,12 +64,13 @@ export const wishlistService = {
 
   async moveToCart(productId) {
     try {
-      const response = await apiService("/wishlist/move-to-cart", {
+      const response = await apiService("/users/wishlist/move-to-cart", {
         method: "POST",
         body: { productId },
       });
       return response;
     } catch (error) {
+      console.error("Move to cart service error:", error);
       return {
         success: false,
         message: error.message,

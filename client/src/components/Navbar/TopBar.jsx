@@ -3,26 +3,17 @@ import { MapPin, User, LogOut } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import { logout } from "../../rtk/slices/authSlice";
-import { clearCart, selectCartItems } from "../../rtk/slices/cartSlice";
+import { clearCart } from "../../rtk/slices/cartSlice";
 import toast from "react-hot-toast";
-import {
-  clearWishlistData,
-  selectWishlistItems,
-} from "@/rtk/slices/wishlistSlice";
+import { clearWishlistData } from "@/rtk/slices/wishlistSlice";
 
 const TopBar = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
-  const cartItems = useSelector(selectCartItems);
-  const wishlistItems = useSelector(selectWishlistItems);
   const { user } = useSelector((state) => state.auth);
 
   const handleLogout = () => {
-    // Save current cart AND wishlist to localStorage before logging out
-    localStorage.setItem("localCart", JSON.stringify(cartItems));
-    localStorage.setItem("guestWishlist", JSON.stringify(wishlistItems));
-
-    // Clear Redux state by dispatching clear actions
+    localStorage.removeItem("guestWishlist");
     dispatch(clearCart());
     dispatch(clearWishlistData());
 
@@ -33,7 +24,7 @@ const TopBar = () => {
   return (
     <div className="bg-gradient-to-r from-gray-900 to-gray-800 py-2 text-white">
       <div className="center !py-2 flex flex-col sm:flex-row justify-between items-center gap-2 sm:gap-0">
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 text-center">
           <MapPin size={14} className="text-green-400" />
           <span className="text-gray-300 text-xs sm:text-sm">
             Store Location: Lincoln - 344, Illinois, Chicago, USA

@@ -1,19 +1,19 @@
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
 
 // Helper function to save guest cart to localStorage
-const saveGuestCartToLocalStorage = (items) => {
-  localStorage.setItem("guestCart", JSON.stringify(items));
-};
-
-// Helper function to load guest cart from localStorage
 const loadGuestCartFromLocalStorage = () => {
   try {
     const guestCart = localStorage.getItem("guestCart");
-    return guestCart ? JSON.parse(guestCart) : [];
+    const parsed = guestCart ? JSON.parse(guestCart) : [];
+    return parsed;
   } catch (error) {
     console.error("Error loading guest cart from localStorage:", error);
     return [];
   }
+};
+
+const saveGuestCartToLocalStorage = (items) => {
+  localStorage.setItem("guestCart", JSON.stringify(items));
 };
 
 const transformBackendCart = (backendCart) => {
@@ -59,6 +59,7 @@ export const addToCart = createAsyncThunk(
           guest: true,
         };
       }
+
       const response = await fetch("http://localhost:8000/api/users/cart", {
         method: "POST",
         headers: {
@@ -100,7 +101,13 @@ export const fetchCart = createAsyncThunk(
         },
       });
       if (!response.ok) {
-        throw new Error("Failed to fetch cart");
+        if (response.status === 401) {
+          throw new Error("Authentication failed. Please login again.");
+        } else if (response.status === 404) {
+          throw new Error("Cart not found.");
+        } else {
+          throw new Error(`Server error: ${response.status}`);
+        }
       }
       const data = await response.json();
       const transformedItems = transformBackendCart(data.data?.cart);
@@ -109,11 +116,16 @@ export const fetchCart = createAsyncThunk(
         fromServer: true,
       };
     } catch (error) {
-      return rejectWithValue(error.message);
+      let errorMessage = error.message;
+      if (error.message.includes("Failed to fetch")) {
+        errorMessage = "Network error. Please check your connection.";
+      } else if (error.message.includes("Authentication failed")) {
+        errorMessage = "Session expired. Please login again.";
+      }
+      return rejectWithValue(errorMessage);
     }
   },
 );
-
 export const syncGuestCartToServer = createAsyncThunk(
   "cart/syncGuestCartToServer",
   async (_, { rejectWithValue, getState }) => {
@@ -138,7 +150,6 @@ export const syncGuestCartToServer = createAsyncThunk(
               currentProduct,
               item.quantity,
             );
-
             await fetch("http://localhost:8000/api/users/cart", {
               method: "POST",
               headers: {
@@ -157,8 +168,6 @@ export const syncGuestCartToServer = createAsyncThunk(
       }
       // Clear guest cart after successful sync
       localStorage.removeItem("guestCart");
-
-      console.log("Guest cart synced successfully");
       return {
         success: true,
         message: "Guest cart synced successfully",
@@ -170,7 +179,36 @@ export const syncGuestCartToServer = createAsyncThunk(
     }
   },
 );
-
+export const removeFromCart = createAsyncThunk(
+  "cart/removeFromCart",
+  async (productId, { rejectWithValue, getState }) => {
+    try {
+      const state = getState();
+      const token = state.auth.token;
+      if (!token) {
+        // For guest users, just return the productId for local removal
+        return { productId, guest: true };
+      }
+      // For authenticated users, remove from server
+      const response = await fetch(
+        `http://localhost:8000/api/users/cart/${productId}`,
+        {
+          method: "DELETE",
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        },
+      );
+      if (!response.ok) {
+        throw new Error("Failed to remove item from cart");
+      }
+      const data = await response.json();
+      return { ...data, productId };
+    } catch (error) {
+      return rejectWithValue(error.message);
+    }
+  },
+);
 const cartSlice = createSlice({
   name: "cart",
   initialState: {
@@ -185,22 +223,19 @@ const cartSlice = createSlice({
     addItemToCart: (state, action) => {
       const product = action.payload;
       const existingItem = state.items.find((item) => item._id === product._id);
-
       if (existingItem) {
-        // Check if we can add more without exceeding stock
-        const newQuantity = existingItem.quantity + 1;
-        if (newQuantity <= existingItem.countInStock) {
-          existingItem.quantity = newQuantity;
-        }
-        // If it would exceed stock, don't change the quantity
+        const newQuantity = existingItem.quantity + product.quantity;
+        const validQuantity = validateQuantityAgainstStock(
+          existingItem,
+          newQuantity,
+        );
+        existingItem.quantity = validQuantity;
       } else {
-        // Adding new item - start with quantity 1 (or whatever is passed)
-        const initialQuantity = product.quantity || 1;
+        // Add new item with the provided quantity
         const validQuantity = validateQuantityAgainstStock(
           product,
-          initialQuantity,
+          product.quantity,
         );
-
         if (validQuantity > 0) {
           state.items.push({
             ...product,
@@ -214,9 +249,39 @@ const cartSlice = createSlice({
         saveGuestCartToLocalStorage(state.items);
       }
     },
+
+    addFromWishlist: (state, action) => {
+      const product = action.payload;
+      const productId = product._id;
+      const existingItem = state.items.find((item) => item._id === productId);
+      if (existingItem) {
+        // set quantity to 1, don't increment
+        existingItem.quantity = 1;
+      } else {
+        // Add new item with quantity 1
+        const validQuantity = validateQuantityAgainstStock(product, 1);
+        if (validQuantity > 0) {
+          const cartItem = {
+            ...product,
+            quantity: validQuantity,
+          };
+          state.items.push(cartItem);
+        }
+      }
+      updateCartTotals(state);
+      if (state.isGuest) {
+        saveGuestCartToLocalStorage(state.items);
+      }
+    },
     removeItem: (state, action) => {
       const productId = action.payload;
-      state.items = state.items.filter((item) => item._id !== productId);
+      state.items = state.items.filter((item) => {
+        const shouldKeep =
+          item._id !== productId &&
+          item.cartItemId !== productId &&
+          item.product?._id !== productId;
+        return shouldKeep;
+      });
       updateCartTotals(state);
       if (state.isGuest) {
         saveGuestCartToLocalStorage(state.items);
@@ -311,13 +376,13 @@ const cartSlice = createSlice({
           const existingItem = state.items.find(
             (item) => item._id === product._id,
           );
-
           if (existingItem) {
             const newQuantity = existingItem.quantity + product.quantity;
-            existingItem.quantity = validateQuantityAgainstStock(
+            const validQuantity = validateQuantityAgainstStock(
               existingItem,
               newQuantity,
             );
+            existingItem.quantity = validQuantity;
           } else {
             state.items.push(product);
           }
@@ -361,25 +426,64 @@ const cartSlice = createSlice({
       .addCase(syncGuestCartToServer.fulfilled, (state, action) => {
         state.isGuest = false;
         // Don't set items from payload as they might be outdated
-        // Instead, refetch the cart from server
+      })
+      .addCase(removeFromCart.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(removeFromCart.fulfilled, (state, action) => {
+        state.loading = false;
+
+        if (action.payload.guest) {
+          // For guest users, remove from local state
+          const productId = action.payload.productId;
+          state.items = state.items.filter(
+            (item) => item._id !== productId && item.product?._id !== productId,
+          );
+          updateCartTotals(state);
+          if (state.isGuest) {
+            saveGuestCartToLocalStorage(state.items);
+          }
+        } else {
+          const productId = action.payload.productId;
+          state.items = state.items.filter(
+            (item) => item._id !== productId && item.product?._id !== productId,
+          );
+          updateCartTotals(state);
+        }
+      })
+      .addCase(removeFromCart.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
       });
   },
 });
 
 // Helper function to update cart totals
 const updateCartTotals = (state) => {
-  state.totalQuantity = state.items.reduce(
-    (total, item) => total + item.quantity,
-    0,
-  );
-  state.totalAmount = state.items.reduce((total, item) => {
-    const price = item.salePrice || item.price;
-    return total + price * item.quantity;
-  }, 0);
+  // Handle the NAN error
+  try {
+    state.totalQuantity = state.items.reduce((total, item) => {
+      const quantity = Number(item.quantity) || 0;
+      return total + quantity;
+    }, 0);
+    state.totalAmount = state.items.reduce((total, item) => {
+      const price = Number(item.salePrice) || Number(item.price) || 0;
+      const quantity = Number(item.quantity) || 0;
+      return total + price * quantity;
+    }, 0);
+    state.totalQuantity = isNaN(state.totalQuantity) ? 0 : state.totalQuantity;
+    state.totalAmount = isNaN(state.totalAmount) ? 0 : state.totalAmount;
+  } catch (error) {
+    console.error("Error updating cart totals:", error);
+    state.totalQuantity = 0;
+    state.totalAmount = 0;
+  }
 };
 
 export const {
   addItemToCart,
+  addFromWishlist,
   removeItem,
   updateQuantity,
   incrementQuantity,

@@ -12,10 +12,9 @@ const ProductActions = ({
   addingToWishlist,
   addingToCart,
   cartLoading,
-  canAddToCart,
 }) => {
   const isOutOfStock = product.countInStock === 0;
-  const isMaxQuantityReached = !canAddToCart;
+  const isMaxQuantityReached = quantity > product.countInStock;
   const isLoading = addingToCart || cartLoading;
 
   return (

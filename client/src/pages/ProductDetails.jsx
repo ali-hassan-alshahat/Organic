@@ -6,7 +6,6 @@ import DynamicBreadcrumb from "@/components/DynamicBreadcrumb";
 import {
   addItemToCart,
   addToCart,
-  selectCartItems,
   selectCanAddToCart,
 } from "@/rtk/slices/cartSlice";
 import {
@@ -38,7 +37,6 @@ const ProductDetails = () => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const isAuthenticated = useSelector(selectIsAuthenticated);
-  const cartItems = useSelector(selectCartItems);
   const { loading: cartLoading } = useSelector((state) => state.cart);
   const { items: wishlistItems } = useSelector((state) => state.wishlist);
   const { quickView, openQuickView, closeQuickView } = useQuickView();
@@ -80,14 +78,8 @@ const ProductDetails = () => {
   const handleAddToCart = async () => {
     if (!product) return;
     if (addingToCart) return;
-    const existingCartItem = cartItems.find((item) => item._id === product._id);
-    const currentQuantity = existingCartItem ? existingCartItem.quantity : 0;
-    if (currentQuantity + quantity > product.countInStock) {
-      toast.error(
-        `Cannot add ${quantity} items - only ${
-          product.countInStock - currentQuantity
-        } available`,
-      );
+    if (quantity > product.countInStock) {
+      toast.error(`Only ${product.countInStock} items available in stock`);
       return;
     }
 
@@ -95,15 +87,15 @@ const ProductDetails = () => {
     try {
       if (isAuthenticated) {
         await dispatch(
-          addToCart({ productId: product._id, quantity }),
+          addToCart({ productId: product._id, quantity: quantity }),
         ).unwrap();
         toast.success(`Added ${quantity} ${product.name} to cart successfully`);
       } else {
-        const productWithQuantity = { ...product, quantity };
+        const productWithQuantity = { ...product, quantity: quantity };
         dispatch(addItemToCart(productWithQuantity));
         toast.success(`Added ${quantity} ${product.name} to cart successfully`);
       }
-      setQuantity(1);
+      setQuantity(1); // Reset to 1 after adding
     } catch (error) {
       console.error("Add to cart failed:", error);
       toast.error(
@@ -147,8 +139,13 @@ const ProductDetails = () => {
 
   const handleQuantityChange = (change) => {
     const newQuantity = quantity + change;
-    if (newQuantity >= 1 && newQuantity <= (product?.countInStock || 1)) {
+    if (product && newQuantity >= 1 && newQuantity <= product.countInStock) {
       setQuantity(newQuantity);
+    } else if (newQuantity < 1) {
+      setQuantity(1);
+    } else if (newQuantity > product.countInStock) {
+      setQuantity(product.countInStock);
+      toast.error(`Maximum ${product.countInStock} items available`);
     }
   };
 
@@ -185,7 +182,7 @@ const ProductDetails = () => {
   }
 
   return (
-    <>
+    <div className="min-h-screen bg-white">
       <DynamicBreadcrumb
         items={[
           { label: "Home", href: "/" },
@@ -193,14 +190,14 @@ const ProductDetails = () => {
           { label: product.name, href: `/product/${product._id}` },
         ]}
       />
-      <div className="center py-6 px-4 sm:px-6 md:px-8">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 xl:gap-14 items-start py-4">
+      <div className="w-full max-w-[100vw] overflow-x-hidden py-6 px-4 sm:px-6">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 xl:gap-12 items-start py-4 mx-auto max-w-7xl">
           <ProductImageGallery
             product={product}
             selectedImage={selectedImage}
             setSelectedImage={setSelectedImage}
           />
-          <div>
+          <div className="w-full">
             <ProductInfo product={product} />
             <ProductActions
               product={product}
@@ -217,11 +214,15 @@ const ProductDetails = () => {
             />
           </div>
         </div>
-        <hr />
-        <div className="max-w-6xl mx-auto mt-2 px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-            <ProductReviews reviews={product.reviews} />
-            <ProductSidebar />
+        <hr className="mx-auto max-w-7xl" />
+        <div className="w-full max-w-7xl mx-auto mt-8 px-4 sm:px-6">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-2 sm:gap-8">
+            <div className="lg:col-span-2">
+              <ProductReviews reviews={product.reviews} />
+            </div>
+            <div className="lg:col-span-1">
+              <ProductSidebar />
+            </div>
           </div>
         </div>
         <RelatedProducts
@@ -233,7 +234,7 @@ const ProductDetails = () => {
         />
       </div>
       <Newsletter />
-    </>
+    </div>
   );
 };
 

@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { motion } from "motion/react";
-import { Heart, Eye, ShoppingBag } from "lucide-react";
+import { Heart, Eye, ShoppingBag, Check, X } from "lucide-react";
 import { renderStars } from "../../utils/renderStars";
 import { useDispatch, useSelector } from "react-redux";
 import {
@@ -8,6 +8,8 @@ import {
   selectCartItems,
   selectCanAddToCart,
   addToCart,
+  removeItem,
+  removeFromCart,
 } from "@/rtk/slices/cartSlice";
 import {
   addToGuestWishlist,
@@ -17,7 +19,6 @@ import {
 } from "@/rtk/slices/wishlistSlice";
 import toast from "react-hot-toast";
 import { Link } from "react-router-dom";
-import { selectIsAuthenticated } from "../../rtk/slices/authSlice";
 
 const ProductCard = ({ product, onQuickView }) => {
   const dispatch = useDispatch();
@@ -27,8 +28,11 @@ const ProductCard = ({ product, onQuickView }) => {
     (state) => state.wishlist,
   );
   const [isInWishlist, setIsInWishlist] = useState(false);
-  const isAuthenticated = useSelector(selectIsAuthenticated);
+  const [isProductInCart, setIsProductInCart] = useState(false);
+  const { user, token } = useSelector((state) => state.auth);
+  const isAuthenticated = !!user && !!token;
   const [addingToCart, setAddingToCart] = useState(false);
+  const [removingFromCart, setRemovingFromCart] = useState(false);
   const canAddToCart = useSelector(selectCanAddToCart(product._id, 1));
 
   useEffect(() => {
@@ -37,14 +41,34 @@ const ProductCard = ({ product, onQuickView }) => {
     );
     setIsInWishlist(inWishlist);
   }, [wishlistItems, product._id]);
+  useEffect(() => {
+    const inCart = cartItems.some((item) => item._id === product._id);
+    setIsProductInCart(inCart);
+  }, [cartItems, product._id]);
+
   const discount =
     product.isOnSale && product.salePrice
       ? Math.round(((product.price - product.salePrice) / product.price) * 100)
       : 0;
-  const handleAddToCart = async (e) => {
+
+  const handleCartToggle = async (e) => {
     e.preventDefault();
     e.stopPropagation();
+
+    if (isProductInCart) {
+      await handleRemoveFromCart(e);
+    } else {
+      await handleAddToCart(e);
+    }
+  };
+
+  const handleAddToCart = async (e) => {
+    if (e) {
+      e.preventDefault();
+      e.stopPropagation();
+    }
     if (addingToCart) return;
+
     // Check stock before adding
     const existingCartItem = cartItems.find((item) => item._id === product._id);
     const currentQuantity = existingCartItem ? existingCartItem.quantity : 0;
@@ -52,6 +76,7 @@ const ProductCard = ({ product, onQuickView }) => {
       toast.error(`Cannot add more ${product.name} - maximum quantity reached`);
       return;
     }
+
     setAddingToCart(true);
     try {
       if (isAuthenticated) {
@@ -59,9 +84,11 @@ const ProductCard = ({ product, onQuickView }) => {
           addToCart({ productId: product._id, quantity: 1 }),
         ).unwrap();
         toast.success(`Added ${product.name} to cart successfully`);
+        setIsProductInCart(true);
       } else {
         dispatch(addItemToCart(product));
         toast.success(`Added ${product.name} to cart successfully`);
+        setIsProductInCart(true);
       }
     } catch (error) {
       console.error("Add to cart failed:", error);
@@ -73,13 +100,43 @@ const ProductCard = ({ product, onQuickView }) => {
     }
   };
 
+  const handleRemoveFromCart = async (e) => {
+    if (e) {
+      e.preventDefault();
+      e.stopPropagation();
+    }
+    if (removingFromCart) return;
+    setRemovingFromCart(true);
+    try {
+      // Find the cart item to remove
+      const cartItemToRemove = cartItems.find(
+        (item) => item._id === product._id,
+      );
+
+      if (cartItemToRemove) {
+        const cartItemId =
+          cartItemToRemove._id || cartItemToRemove.cartItemId || product._id;
+        if (isAuthenticated) {
+          await dispatch(removeFromCart(product._id)).unwrap();
+        } else {
+          dispatch(removeItem(cartItemId));
+        }
+        toast.success(`Removed ${product.name} from cart`);
+        setIsProductInCart(false);
+      }
+    } catch (error) {
+      toast.error(error);
+    } finally {
+      setRemovingFromCart(false);
+    }
+  };
+
   const handleWishlistToggle = async (e) => {
     e.preventDefault();
     e.stopPropagation();
 
     try {
       if (isInWishlist) {
-        // Remove from wishlist
         if (isAuthenticated) {
           await dispatch(removeFromWishlist(product._id)).unwrap();
           toast.success(`${product.name} removed from wishlist`);
@@ -88,7 +145,6 @@ const ProductCard = ({ product, onQuickView }) => {
           toast.success(`${product.name} removed from wishlist`);
         }
       } else {
-        // Add to wishlist
         if (isAuthenticated) {
           await dispatch(addToWishlist(product._id)).unwrap();
           toast.success(`${product.name} added to wishlist`);
@@ -107,10 +163,11 @@ const ProductCard = ({ product, onQuickView }) => {
     e.stopPropagation();
     onQuickView(product);
   };
+
   // Check if product is out of stock or max quantity reached
   const isOutOfStock = product.countInStock === 0;
   const isMaxQuantityReached = !canAddToCart;
-  const isLoading = addingToCart || cartLoading;
+  const isLoading = addingToCart || cartLoading || removingFromCart;
 
   return (
     <Link
@@ -190,18 +247,30 @@ const ProductCard = ({ product, onQuickView }) => {
           </div>
         </div>
         <button
-          onClick={handleAddToCart}
-          disabled={isLoading || isOutOfStock || isMaxQuantityReached}
+          onClick={handleCartToggle}
+          disabled={
+            isLoading ||
+            isOutOfStock ||
+            (isMaxQuantityReached && !isProductInCart)
+          }
           className={`${
-            isOutOfStock || isMaxQuantityReached
+            isProductInCart
+              ? "bg-green-600 hover:bg-red-600 cursor-pointer"
+              : isOutOfStock || isMaxQuantityReached
               ? "bg-gray-400 cursor-not-allowed"
               : "bg-green-500 hover:bg-green-600 cursor-pointer"
           } text-white p-2 rounded-lg transition-colors ${
             isLoading ? "opacity-50 cursor-not-allowed" : ""
-          }`}
+          } group relative`}
+          title={isProductInCart ? "Remove from cart" : "Add to cart"}
         >
           {isLoading ? (
             <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+          ) : isProductInCart ? (
+            <>
+              <Check className="w-4 h-4 group-hover:hidden" />
+              <X className="w-4 h-4 hidden group-hover:block" />
+            </>
           ) : (
             <ShoppingBag className="w-4 h-4" />
           )}
@@ -211,6 +280,8 @@ const ProductCard = ({ product, onQuickView }) => {
         <div className="text-xs text-gray-500">
           {isOutOfStock ? (
             <span className="text-red-500">Out of stock</span>
+          ) : isProductInCart ? (
+            <span className="text-green-600">✓ In cart</span>
           ) : (
             <span>
               {product.countInStock} in stock

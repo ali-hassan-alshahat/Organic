@@ -2,21 +2,32 @@ import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import { wishlistService } from "../../services/wishlist.service";
 import { fetchCart } from "./cartSlice";
 
+// Helper function to filter out null products
+const filterValidWishlistItems = (wishlist) => {
+  if (!Array.isArray(wishlist)) return [];
+  return wishlist.filter((item) => item.productId !== null);
+};
+
 // Async thunks
 export const addToWishlist = createAsyncThunk(
   "wishlist/add",
   async (productId, { rejectWithValue }) => {
     try {
       const response = await wishlistService.addToWishlist(productId);
-      if (response.success) {
-        return {
-          wishlist: response.data.wishlist,
-        };
+      if (response && response.success) {
+        const filteredWishlist = filterValidWishlistItems(
+          response.data?.wishlist || [],
+        );
+        return { wishlist: filteredWishlist };
       } else {
-        return rejectWithValue(response.message || "Failed to add to wishlist");
+        return rejectWithValue(
+          response?.message || "Failed to add to wishlist",
+        );
       }
     } catch (error) {
-      return rejectWithValue(error.message);
+      return rejectWithValue(
+        error.message || "Network error while adding to wishlist",
+      );
     }
   },
 );
@@ -26,11 +37,11 @@ export const removeFromWishlist = createAsyncThunk(
   async (productId, { rejectWithValue }) => {
     try {
       const response = await wishlistService.removeFromWishlist(productId);
-      if (response.success) {
+      if (response && response.success) {
         return productId;
       } else {
         return rejectWithValue(
-          response.message || "Failed to remove from wishlist",
+          response?.message || "Failed to remove from wishlist",
         );
       }
     } catch (error) {
@@ -44,12 +55,12 @@ export const fetchWishlist = createAsyncThunk(
   async (_, { rejectWithValue }) => {
     try {
       const response = await wishlistService.getWishlist();
-      if (response.success) {
+      if (response && response.success) {
         return {
-          wishlist: response.data.wishlist,
+          wishlist: filterValidWishlistItems(response.data?.wishlist || []),
         };
       } else {
-        return rejectWithValue(response.message || "Failed to fetch wishlist");
+        return rejectWithValue(response?.message || "Failed to fetch wishlist");
       }
     } catch (error) {
       return rejectWithValue(error.message);
@@ -84,7 +95,7 @@ export const moveToCart = createAsyncThunk(
         // Refresh cart after moving item
         dispatch(fetchCart());
         return {
-          wishlist: response.data.wishlist,
+          wishlist: filterValidWishlistItems(response.data.wishlist),
           cart: response.data.cart,
         };
       } else {
@@ -112,7 +123,13 @@ const wishlistSlice = createSlice({
       // Initialize from localStorage or set default
       const guestWishlist = localStorage.getItem("guestWishlist");
       if (guestWishlist) {
-        state.items = JSON.parse(guestWishlist);
+        try {
+          const parsedWishlist = JSON.parse(guestWishlist);
+          state.items = filterValidWishlistItems(parsedWishlist);
+        } catch (error) {
+          console.error("Error parsing guest wishlist:", error);
+          state.items = [];
+        }
       }
       state.isInitialized = true;
     },
@@ -150,7 +167,7 @@ const wishlistSlice = createSlice({
     },
     syncGuestWishlistToServer: (state, action) => {
       // Replace guest wishlist with server data after login
-      state.items = action.payload || [];
+      state.items = filterValidWishlistItems(action.payload) || [];
     },
   },
   extraReducers: (builder) => {
@@ -251,3 +268,7 @@ export const selectIsInWishlist = (state, productId) =>
     (item) => item.productId?._id === productId || item.productId === productId,
   ) || false;
 export const selectWishlistCount = (state) => state.wishlist.items?.length || 0;
+
+// New selector to get only valid wishlist items
+export const selectValidWishlistItems = (state) =>
+  state.wishlist.items.filter((item) => item.productId !== null);

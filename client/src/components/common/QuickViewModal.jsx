@@ -1,12 +1,21 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { motion } from "motion/react";
-import { X, ShoppingBag, Heart, Truck, Shield } from "lucide-react";
+import {
+  X,
+  ShoppingBag,
+  Heart,
+  Truck,
+  Shield,
+  RefreshCw,
+  ArrowRight,
+} from "lucide-react";
 import { renderStars } from "../../utils/renderStars";
 import {
   addItemToCart,
   addToCart,
   selectCartItems,
   selectCanAddToCart,
+  clearError,
 } from "@/rtk/slices/cartSlice";
 import {
   addToWishlist,
@@ -18,9 +27,11 @@ import {
 import { useDispatch, useSelector } from "react-redux";
 import { selectIsAuthenticated } from "@/rtk/slices/authSlice";
 import toast from "react-hot-toast";
+import { useNavigate } from "react-router-dom";
 
 const QuickViewModal = ({ quickView, onClose }) => {
   const dispatch = useDispatch();
+  const navigate = useNavigate();
   const isAuthenticated = useSelector(selectIsAuthenticated);
   const cartItems = useSelector(selectCartItems);
   const { loading: cartLoading, error: cartError } = useSelector(
@@ -31,9 +42,32 @@ const QuickViewModal = ({ quickView, onClose }) => {
   );
   const wishlistLoading = useSelector((state) => state.wishlist.loading);
   const [addingToCart, setAddingToCart] = useState(false);
+  const [isProductInCart, setIsProductInCart] = useState(false);
+
   const canAddToCart = useSelector((state) =>
     quickView ? selectCanAddToCart(quickView._id, 1)(state) : false,
   );
+  useEffect(() => {
+    if (quickView) {
+      const inCart = cartItems.some((item) => item._id === quickView._id);
+      setIsProductInCart(inCart);
+    }
+  }, [cartItems, quickView]);
+
+  useEffect(() => {
+    return () => {
+      if (cartError) {
+        dispatch(clearError());
+      }
+    };
+  }, [dispatch, cartError]);
+
+  useEffect(() => {
+    if (quickView && cartError) {
+      dispatch(clearError());
+    }
+  }, [quickView, dispatch, cartError]);
+
   if (!quickView) return null;
 
   const handleAddToCart = async () => {
@@ -56,17 +90,23 @@ const QuickViewModal = ({ quickView, onClose }) => {
           addToCart({ productId: quickView._id, quantity: 1 }),
         ).unwrap();
         toast.success(`Added ${quickView.name} to cart successfully`);
+        setIsProductInCart(true);
       } else {
-        dispatch(addItemToCart(quickView));
+        const productWithQuantity = { ...quickView, quantity: 1 };
+        dispatch(addItemToCart(productWithQuantity));
         toast.success(`Added ${quickView.name} to cart successfully`);
+        setIsProductInCart(true);
       }
     } catch (error) {
-      toast.error(
-        error.payload || error.message || "Failed to add item to cart",
-      );
+      console.error("Add to cart error:", error);
     } finally {
       setAddingToCart(false);
     }
+  };
+
+  const handleGoToCart = () => {
+    onClose();
+    navigate("/cart");
   };
 
   const handleWishlistToggle = async () => {
@@ -92,6 +132,10 @@ const QuickViewModal = ({ quickView, onClose }) => {
     } catch (error) {
       toast.error(error.payload || "Something went wrong");
     }
+  };
+
+  const handleRetry = () => {
+    dispatch(clearError());
   };
 
   // Check if product is out of stock or max quantity reached
@@ -238,27 +282,40 @@ const QuickViewModal = ({ quickView, onClose }) => {
                   )}
                 </div>
                 <div className="flex gap-4 pt-4">
-                  <button
-                    onClick={handleAddToCart}
-                    disabled={isLoading || isOutOfStock || isMaxQuantityReached}
-                    className={`flex-1 py-4 px-8 rounded-xl font-semibold text-lg transition-colors hover:shadow-lg flex items-center justify-center gap-3 ${
-                      isOutOfStock || isMaxQuantityReached
-                        ? "bg-gray-400 cursor-not-allowed"
-                        : "bg-green-500 hover:bg-green-600 cursor-pointer text-white"
-                    } ${isLoading ? "opacity-50 cursor-not-allowed" : ""}`}
-                  >
-                    {isLoading ? (
-                      <>
-                        <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                        Adding...
-                      </>
-                    ) : (
-                      <>
-                        <ShoppingBag size={24} />
-                        Add to Cart
-                      </>
-                    )}
-                  </button>
+                  {isProductInCart ? (
+                    <button
+                      onClick={handleGoToCart}
+                      className="flex-1 py-4 px-8 rounded-xl font-semibold text-lg transition-colors hover:shadow-lg flex items-center justify-center gap-3 bg-[var(--main-primary)] hover:bg-[var(--hard-primary)] text-white cursor-pointer"
+                    >
+                      <ShoppingBag size={24} />
+                      Go to Cart
+                      <ArrowRight size={20} />
+                    </button>
+                  ) : (
+                    <button
+                      onClick={handleAddToCart}
+                      disabled={
+                        isLoading || isOutOfStock || isMaxQuantityReached
+                      }
+                      className={`flex-1 py-4 px-8 rounded-xl font-semibold text-lg transition-colors hover:shadow-lg flex items-center justify-center gap-3 ${
+                        isOutOfStock || isMaxQuantityReached
+                          ? "bg-gray-400 cursor-not-allowed"
+                          : "bg-green-500 hover:bg-green-600 cursor-pointer text-white"
+                      } ${isLoading ? "opacity-50 cursor-not-allowed" : ""}`}
+                    >
+                      {isLoading ? (
+                        <>
+                          <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                          Adding...
+                        </>
+                      ) : (
+                        <>
+                          <ShoppingBag size={24} />
+                          Add to Cart
+                        </>
+                      )}
+                    </button>
+                  )}
                   <button
                     onClick={handleWishlistToggle}
                     disabled={wishlistLoading}
@@ -281,10 +338,30 @@ const QuickViewModal = ({ quickView, onClose }) => {
                   </button>
                 </div>
                 {cartError && (
-                  <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg flex items-center gap-2">
-                    <span>⚠</span>
-                    {cartError}
-                  </div>
+                  <motion.div
+                    initial={{ opacity: 0, y: -10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg"
+                  >
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <span className="text-lg">⚠️</span>
+                        <span className="font-medium">{cartError}</span>
+                      </div>
+                      <button
+                        onClick={handleRetry}
+                        className="flex items-center gap-1 text-sm bg-red-100 hover:bg-red-200 px-3 py-1 rounded transition-colors"
+                      >
+                        <RefreshCw size={14} />
+                        Retry
+                      </button>
+                    </div>
+                    <p className="text-sm text-red-600 mt-2">
+                      {cartError.includes("fetch")
+                        ? "Please check your internet connection and try again."
+                        : "Please try again or contact support if the problem persists."}
+                    </p>
+                  </motion.div>
                 )}
               </div>
             </div>

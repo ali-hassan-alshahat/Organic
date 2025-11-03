@@ -6,7 +6,7 @@ export const renderStars = (rating = 0) => {
     stars.push(
       <Star
         key={i}
-        size={20}
+        size={18}
         className={`${
           i <= Math.floor(rating)
             ? "text-yellow-400 fill-yellow-400"

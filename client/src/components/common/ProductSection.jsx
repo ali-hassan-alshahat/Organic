@@ -18,7 +18,6 @@ const ProductSection = ({
         whileInView={{ opacity: 1, y: 0 }}
         viewport={{ margin: "-50px", once: true }}
         transition={{ duration: 0.6 }}
-        className="center"
       >
         <div className="flex justify-between items-center mb-8">
           <h1 className="text-2xl sm:text-3xl font-semibold">{title}</h1>

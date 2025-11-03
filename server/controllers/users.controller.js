@@ -80,7 +80,14 @@ exports.register = async (req, res) => {
 
 exports.getCart = async (req, res) => {
   try {
-    const user = await User.findById(req.user._id).populate("cart.productId");
+    const user = await User.findById(req.user._id).populate({
+      path: "cart.productId",
+      populate: {
+        path: "category",
+        select: "name slug",
+      },
+      select: "name price image isOnSale salePrice category countInStock",
+    });
     return successResponse(
       res,
       { cart: user.cart },
@@ -102,6 +109,7 @@ exports.addToCart = async (req, res) => {
     const existingItemIndex = user.cart.findIndex(
       (item) => item.productId.toString() === productId,
     );
+
     if (existingItemIndex > -1) {
       user.cart[existingItemIndex].quantity += parseInt(quantity);
     } else {

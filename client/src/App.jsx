@@ -14,9 +14,10 @@ import { useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { initializeAuth } from "./rtk/slices/authSlice";
 import { fetchCart, switchToGuestCart } from "./rtk/slices/cartSlice";
-import { fetchWishlist } from "./rtk/slices/wishlistSlice";
+import { fetchWishlist, initializeWishlist } from "./rtk/slices/wishlistSlice";
 import AdminLogin from "./pages/AdminLogin";
 import ErrorPage from "./pages/ErrorPage";
+import Wishlist from "./pages/Wishlist";
 
 function App() {
   const dispatch = useDispatch();
@@ -29,14 +30,16 @@ function App() {
   useEffect(() => {
     if (token && user) {
       dispatch(fetchCart());
+      dispatch(fetchWishlist());
     } else {
-      dispatch(switchToGuestCart());
+      dispatch(initializeWishlist());
+      const guestCart = localStorage.getItem("guestCart");
+      if (guestCart && JSON.parse(guestCart).length > 0) {
+        dispatch(switchToGuestCart());
+      }
     }
   }, [dispatch, token, user]);
 
-  useEffect(() => {
-    dispatch(fetchWishlist());
-  }, [dispatch]);
   let routers = createBrowserRouter([
     {
       path: "/",
@@ -55,6 +58,7 @@ function App() {
         { path: "/login", element: <Login /> },
         { path: "/register", element: <Register /> },
         { path: "/admin/login", element: <AdminLogin /> },
+        { path: "/wishlist", element: <Wishlist /> },
         { path: "*", element: <ErrorPage /> },
       ],
     },
