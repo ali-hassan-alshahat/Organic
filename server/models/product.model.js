@@ -39,18 +39,4 @@ const productSchema = new mongoose.Schema(
   { timestamps: true },
 );
 
-// hook to recalculate rating & numReviews
-productSchema.pre("save", function (next) {
-  if (this.reviews && this.reviews.length > 0) {
-    this.numReviews = this.reviews.length;
-    this.rating =
-      this.reviews.reduce((acc, r) => acc + (r.rating || 0), 0) /
-      this.reviews.length;
-  } else {
-    this.numReviews = 0;
-    this.rating = 0;
-  }
-  next();
-});
-
 module.exports = mongoose.model("Product", productSchema);

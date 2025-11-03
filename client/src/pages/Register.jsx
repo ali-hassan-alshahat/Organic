@@ -1,6 +1,7 @@
-import React, { useState, useEffect } from "react";
+import React, { useEffect } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
+import { useForm } from "react-hook-form";
 import {
   registerUser,
   selectAuthLoading,
@@ -12,85 +13,60 @@ import DynamicBreadcrumb from "@/components/DynamicBreadcrumb.jsx";
 import toast from "react-hot-toast";
 
 const Register = () => {
-  const [formData, setFormData] = useState({
-    name: "",
-    email: "",
-    password: "",
-    confirmPassword: "",
+  const {
+    register,
+    handleSubmit,
+    watch,
+    formState: { errors },
+    clearErrors,
+    setFocus,
+  } = useForm({
+    mode: "onSubmit",
+    defaultValues: {
+      name: "",
+      email: "",
+      password: "",
+      confirmPassword: "",
+    },
   });
-  const [errors, setErrors] = useState({});
+
   const dispatch = useDispatch();
   const navigate = useNavigate();
-
   const loading = useSelector(selectAuthLoading);
   const authError = useSelector(selectAuthError);
   const isAuthenticated = useSelector(selectIsAuthenticated);
+  const password = watch("password");
+
   // Redirect if already authenticated
   useEffect(() => {
     if (isAuthenticated) {
       navigate("/", { replace: true });
     }
   }, [isAuthenticated, navigate]);
+
   useEffect(() => {
     dispatch(clearError());
-  }, [dispatch]);
+    setFocus("name");
+  }, [dispatch, setFocus]);
 
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    setFormData({ ...formData, [name]: value });
-    if (errors[name]) {
-      setErrors({ ...errors, [name]: "" });
-    }
+  // Clear auth errors when user starts typing
+  const handleInputChange = (fieldName) => {
     if (authError) {
       dispatch(clearError());
     }
+    clearErrors(fieldName);
   };
 
-  const validateField = (name, value) => {
-    switch (name) {
-      case "name":
-        if (!value.trim()) return "Full name is required";
-        if (value.length < 2) return "Name must be at least 2 characters";
-        return "";
-      case "email":
-        if (!value.trim()) return "Email is required";
-        if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value))
-          return "Please enter a valid email address";
-        return "";
-      case "password":
-        if (!value) return "Password is required";
-        if (value.length < 6) return "Password must be at least 6 characters";
-        return "";
-      case "confirmPassword":
-        if (!value) return "Please confirm your password";
-        if (value !== formData.password) return "Passwords do not match";
-        return "";
-      default:
-        return "";
+  const handleKeyPress = (e) => {
+    if (e.key === "Enter") {
+      e.preventDefault();
+      handleSubmit(onSubmit)();
     }
   };
 
-  const handleBlur = (e) => {
-    const { name, value } = e.target;
-    const error = validateField(name, value);
-    setErrors((prev) => ({ ...prev, [name]: error }));
-  };
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    const newErrors = {};
-    Object.keys(formData).forEach((key) => {
-      const error = validateField(key, formData[key]);
-      if (error) newErrors[key] = error;
-    });
-    if (Object.keys(newErrors).length > 0) {
-      setErrors(newErrors);
-      toast.error("Please fix the validation errors");
-      return;
-    }
-
+  const onSubmit = async (data) => {
     try {
-      const { ...registerData } = formData;
+      const { ...registerData } = data;
       await dispatch(registerUser(registerData)).unwrap();
       toast.success("Account created successfully! 🎉");
     } catch (error) {
@@ -111,7 +87,7 @@ const Register = () => {
           { label: "Register", href: "/register" },
         ]}
       />
-      <div className="min-h-screen flex items-center justify-center p-4 my-8">
+      <div className="flex items-center justify-center p-4 my-4">
         <div className="bg-white rounded-2xl shadow-2xl p-8 w-full max-w-md transition-transform duration-300 hover:translate-y-[-5px]">
           <div className="text-center mb-8">
             <h2 className="text-3xl font-bold text-gray-800 mb-2">
@@ -127,7 +103,11 @@ const Register = () => {
               {authError}
             </div>
           )}
-          <form onSubmit={handleSubmit} className="space-y-6">
+          <form
+            onSubmit={handleSubmit(onSubmit)}
+            className="space-y-6"
+            noValidate
+          >
             <div>
               <label
                 htmlFor="name"
@@ -138,19 +118,25 @@ const Register = () => {
               <input
                 id="name"
                 type="text"
-                name="name"
-                value={formData.name}
-                onChange={handleChange}
-                onBlur={handleBlur}
+                {...register("name", {
+                  required: "Full name is required",
+                  minLength: {
+                    value: 2,
+                    message: "Name must be at least 2 characters",
+                  },
+                })}
+                onChange={() => handleInputChange("name")}
+                onKeyPress={handleKeyPress}
                 placeholder="Enter your full name"
                 className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-[var(--main-primary)] focus:border-transparent transition-all duration-200 bg-gray-50 focus:bg-white ${
                   errors.name ? "border-red-500" : "border-gray-300"
                 }`}
+                autoComplete="name"
               />
               {errors.name && (
                 <p className="text-red-500 text-sm mt-1 flex items-center gap-1">
                   <span>⚠</span>
-                  {errors.name}
+                  {errors.name.message}
                 </p>
               )}
             </div>
@@ -164,19 +150,25 @@ const Register = () => {
               <input
                 id="email"
                 type="email"
-                name="email"
-                value={formData.email}
-                onChange={handleChange}
-                onBlur={handleBlur}
+                {...register("email", {
+                  required: "Email is required",
+                  pattern: {
+                    value: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
+                    message: "Please enter a valid email address",
+                  },
+                })}
+                onChange={() => handleInputChange("email")}
+                onKeyPress={handleKeyPress}
                 placeholder="Enter your email"
                 className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-[var(--main-primary)] focus:border-transparent transition-all duration-200 bg-gray-50 focus:bg-white ${
                   errors.email ? "border-red-500" : "border-gray-300"
                 }`}
+                autoComplete="email"
               />
               {errors.email && (
                 <p className="text-red-500 text-sm mt-1 flex items-center gap-1">
                   <span>⚠</span>
-                  {errors.email}
+                  {errors.email.message}
                 </p>
               )}
             </div>
@@ -190,19 +182,25 @@ const Register = () => {
               <input
                 id="password"
                 type="password"
-                name="password"
-                value={formData.password}
-                onChange={handleChange}
-                onBlur={handleBlur}
+                {...register("password", {
+                  required: "Password is required",
+                  minLength: {
+                    value: 6,
+                    message: "Password must be at least 6 characters",
+                  },
+                })}
+                onChange={() => handleInputChange("password")}
+                onKeyPress={handleKeyPress}
                 placeholder="Create a password"
                 className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-[var(--main-primary)] focus:border-transparent transition-all duration-200 bg-gray-50 focus:bg-white ${
                   errors.password ? "border-red-500" : "border-gray-300"
                 }`}
+                autoComplete="new-password"
               />
               {errors.password && (
                 <p className="text-red-500 text-sm mt-1 flex items-center gap-1">
                   <span>⚠</span>
-                  {errors.password}
+                  {errors.password.message}
                 </p>
               )}
             </div>
@@ -216,19 +214,23 @@ const Register = () => {
               <input
                 id="confirmPassword"
                 type="password"
-                name="confirmPassword"
-                value={formData.confirmPassword}
-                onChange={handleChange}
-                onBlur={handleBlur}
+                {...register("confirmPassword", {
+                  required: "Please confirm your password",
+                  validate: (value) =>
+                    value === password || "Passwords do not match",
+                })}
+                onChange={() => handleInputChange("confirmPassword")}
+                onKeyPress={handleKeyPress}
                 placeholder="Confirm your password"
                 className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-[var(--main-primary)] focus:border-transparent transition-all duration-200 bg-gray-50 focus:bg-white ${
                   errors.confirmPassword ? "border-red-500" : "border-gray-300"
                 }`}
+                autoComplete="new-password"
               />
               {errors.confirmPassword && (
                 <p className="text-red-500 text-sm mt-1 flex items-center gap-1">
                   <span>⚠</span>
-                  {errors.confirmPassword}
+                  {errors.confirmPassword.message}
                 </p>
               )}
             </div>

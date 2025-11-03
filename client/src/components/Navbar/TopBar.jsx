@@ -3,18 +3,29 @@ import { MapPin, User, LogOut } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import { logout } from "../../rtk/slices/authSlice";
-import { selectCartItems } from "../../rtk/slices/cartSlice";
+import { clearCart, selectCartItems } from "../../rtk/slices/cartSlice";
 import toast from "react-hot-toast";
+import {
+  clearWishlistData,
+  selectWishlistItems,
+} from "@/rtk/slices/wishlistSlice";
 
 const TopBar = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const cartItems = useSelector(selectCartItems);
+  const wishlistItems = useSelector(selectWishlistItems);
   const { user } = useSelector((state) => state.auth);
 
   const handleLogout = () => {
-    // Save current cart to localStorage before logging out
+    // Save current cart AND wishlist to localStorage before logging out
     localStorage.setItem("localCart", JSON.stringify(cartItems));
+    localStorage.setItem("guestWishlist", JSON.stringify(wishlistItems));
+
+    // Clear Redux state by dispatching clear actions
+    dispatch(clearCart());
+    dispatch(clearWishlistData());
+
     dispatch(logout());
     toast.success("Logged out successfully!");
     navigate("/");

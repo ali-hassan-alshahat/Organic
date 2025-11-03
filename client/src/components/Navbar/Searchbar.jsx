@@ -20,6 +20,13 @@ const SearchBar = ({
   const [isSearchFocused, setIsSearchFocused] = React.useState(false);
 
   useEffect(() => {
+    const savedSearches = localStorage.getItem("recentSearches");
+    if (savedSearches) {
+      setRecentSearches(JSON.parse(savedSearches));
+    }
+  }, [setRecentSearches]);
+
+  useEffect(() => {
     const handleClickOutside = (event) => {
       if (searchRef.current && !searchRef.current.contains(event.target)) {
         setIsSearchFocused(false);

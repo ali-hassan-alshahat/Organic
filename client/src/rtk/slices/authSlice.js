@@ -3,18 +3,98 @@ import { authService } from "../../services/auth.service";
 import { fetchCart } from "./cartSlice";
 import { fetchWishlist } from "./wishlistSlice";
 
+// Helper functions for guest data
+const loadGuestCartFromLocalStorage = () => {
+  try {
+    const guestCart = localStorage.getItem("guestCart");
+    return guestCart ? JSON.parse(guestCart) : [];
+  } catch (error) {
+    return [];
+  }
+};
+
+const loadGuestWishlistFromLocalStorage = () => {
+  try {
+    const guestWishlist = localStorage.getItem("guestWishlist");
+    return guestWishlist ? JSON.parse(guestWishlist) : [];
+  } catch (error) {
+    return [];
+  }
+};
+
+const syncGuestCartWithToken = async (token, guestCart) => {
+  if (!token || guestCart.length === 0) return;
+  for (const item of guestCart) {
+    try {
+      await fetch("http://localhost:8000/api/users/cart", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          productId: item._id,
+          quantity: item.quantity,
+        }),
+      });
+    } catch (error) {
+      console.error(error);
+    }
+  }
+
+  localStorage.removeItem("guestCart");
+};
+
+const syncGuestWishlistWithToken = async (token, guestWishlist) => {
+  if (!token || guestWishlist.length === 0) return;
+  for (const item of guestWishlist) {
+    try {
+      const productId = item.productId?._id || item.productId;
+      await fetch("http://localhost:8000/api/wishlist", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          productId: productId,
+        }),
+      });
+    } catch (error) {
+      console.error(error);
+    }
+  }
+
+  localStorage.removeItem("guestWishlist");
+};
+
+// Updated thunks with proper sync
 export const loginUser = createAsyncThunk(
   "auth/login",
   async (userData, { rejectWithValue, dispatch }) => {
     try {
       const response = await authService.login(userData);
+
       if (response.success) {
-        // After successful login, fetch user's cart and wishlist
-        dispatch(fetchCart());
-        dispatch(fetchWishlist());
+        const token = response.data.token;
+        // Get guest data before sync
+        const guestCart = loadGuestCartFromLocalStorage();
+        const guestWishlist = loadGuestWishlistFromLocalStorage();
+        // Sync guest data using token from response
+        if (token && guestCart.length > 0) {
+          await syncGuestCartWithToken(token, guestCart);
+        }
+
+        if (token && guestWishlist.length > 0) {
+          await syncGuestWishlistWithToken(token, guestWishlist);
+        }
+
+        // Fetch updated data from server
+        await dispatch(fetchCart()).unwrap();
+        await dispatch(fetchWishlist()).unwrap();
         return {
           user: response.data.user,
-          token: response.data.token,
+          token: token,
         };
       } else {
         return rejectWithValue(response.message || "Login failed");
@@ -30,12 +110,25 @@ export const registerUser = createAsyncThunk(
   async (userData, { rejectWithValue, dispatch }) => {
     try {
       const response = await authService.register(userData);
+
       if (response.success) {
-        dispatch(fetchCart());
-        dispatch(fetchWishlist());
+        const token = response.data.token;
+        // Get guest data before sync
+        const guestCart = loadGuestCartFromLocalStorage();
+        const guestWishlist = loadGuestWishlistFromLocalStorage();
+        // Sync guest data using token from response
+        if (token && guestCart.length > 0) {
+          await syncGuestCartWithToken(token, guestCart);
+        }
+        if (token && guestWishlist.length > 0) {
+          await syncGuestWishlistWithToken(token, guestWishlist);
+        }
+        // Fetch updated data from server
+        await dispatch(fetchCart()).unwrap();
+        await dispatch(fetchWishlist()).unwrap();
         return {
           user: response.data.user,
-          token: response.data.token,
+          token: token,
         };
       } else {
         return rejectWithValue(response.message || "Registration failed");
@@ -45,6 +138,7 @@ export const registerUser = createAsyncThunk(
     }
   },
 );
+
 const authSlice = createSlice({
   name: "auth",
   initialState: {
@@ -61,9 +155,13 @@ const authSlice = createSlice({
       state.token = token;
     },
     logout: (state, action) => {
+      // Save current data to guest storage if requested
       if (action.payload?.saveCart) {
         const currentCart = action.payload.cartItems;
+        const currentWishlist = action.payload.wishlistItems;
+
         localStorage.setItem("guestCart", JSON.stringify(currentCart));
+        localStorage.setItem("guestWishlist", JSON.stringify(currentWishlist));
       }
 
       state.user = null;

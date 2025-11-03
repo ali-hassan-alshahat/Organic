@@ -1,7 +1,7 @@
 import React from "react";
 import { motion } from "motion/react";
 import Skeleton from "react-loading-skeleton";
-import ProductCard from "./ProductCard";
+import ProductCard from "../common/ProductCard";
 
 const ProductGrid = ({ products, loading, onQuickView, renderStars }) => {
   if (loading) {

@@ -1,63 +1,103 @@
-import React from "react";
+import React, { useState } from "react";
 import { motion } from "motion/react";
 import { X, ShoppingBag, Heart, Truck, Shield } from "lucide-react";
 import { renderStars } from "../../utils/renderStars";
-import { addItemToCart, addToCart } from "@/rtk/slices/cartSlice";
+import {
+  addItemToCart,
+  addToCart,
+  selectCartItems,
+  selectCanAddToCart,
+} from "@/rtk/slices/cartSlice";
 import {
   addToWishlist,
   removeFromWishlist,
   selectIsInWishlist,
+  addToGuestWishlist,
+  removeFromGuestWishlist,
 } from "@/rtk/slices/wishlistSlice";
 import { useDispatch, useSelector } from "react-redux";
-import { useNavigate } from "react-router-dom";
 import { selectIsAuthenticated } from "@/rtk/slices/authSlice";
 import toast from "react-hot-toast";
 
 const QuickViewModal = ({ quickView, onClose }) => {
   const dispatch = useDispatch();
-  const navigate = useNavigate();
   const isAuthenticated = useSelector(selectIsAuthenticated);
-
-  // Get wishlist state
+  const cartItems = useSelector(selectCartItems);
+  const { loading: cartLoading, error: cartError } = useSelector(
+    (state) => state.cart,
+  );
   const isInWishlist = useSelector((state) =>
-    selectIsInWishlist(state, quickView?._id),
+    quickView ? selectIsInWishlist(state, quickView._id) : false,
   );
   const wishlistLoading = useSelector((state) => state.wishlist.loading);
-
+  const [addingToCart, setAddingToCart] = useState(false);
+  const canAddToCart = useSelector((state) =>
+    quickView ? selectCanAddToCart(quickView._id, 1)(state) : false,
+  );
   if (!quickView) return null;
 
   const handleAddToCart = async () => {
+    if (addingToCart) return;
+    // Check stock before adding
+    const existingCartItem = cartItems.find(
+      (item) => item._id === quickView._id,
+    );
+    const currentQuantity = existingCartItem ? existingCartItem.quantity : 0;
+    if (currentQuantity >= quickView.countInStock) {
+      toast.error(
+        `Cannot add more ${quickView.name} - maximum quantity reached`,
+      );
+      return;
+    }
+    setAddingToCart(true);
     try {
-      dispatch(addItemToCart(quickView));
-      await dispatch(
-        addToCart({ productId: quickView._id, quantity: 1 }),
-      ).unwrap();
-      toast.success(`Added ${quickView.name} to cart successfully`);
+      if (isAuthenticated) {
+        await dispatch(
+          addToCart({ productId: quickView._id, quantity: 1 }),
+        ).unwrap();
+        toast.success(`Added ${quickView.name} to cart successfully`);
+      } else {
+        dispatch(addItemToCart(quickView));
+        toast.success(`Added ${quickView.name} to cart successfully`);
+      }
     } catch (error) {
-      console.log(error);
+      toast.error(
+        error.payload || error.message || "Failed to add item to cart",
+      );
+    } finally {
+      setAddingToCart(false);
     }
   };
 
   const handleWishlistToggle = async () => {
     if (!isAuthenticated) {
-      toast.error("Please login to manage your wishlist");
-      navigate("/login");
+      if (isInWishlist) {
+        dispatch(removeFromGuestWishlist(quickView._id));
+        toast.success(`${quickView.name} removed from wishlist`);
+      } else {
+        dispatch(addToGuestWishlist(quickView));
+        toast.success(`${quickView.name} added to wishlist`);
+      }
       return;
     }
 
     try {
       if (isInWishlist) {
         await dispatch(removeFromWishlist(quickView._id)).unwrap();
-        toast.success(`${quickView.name} Removed from wishlist`);
+        toast.success(`${quickView.name} removed from wishlist`);
       } else {
         await dispatch(addToWishlist(quickView._id)).unwrap();
-        toast.success(`${quickView.name} Added to wishlist`);
+        toast.success(`${quickView.name} added to wishlist`);
       }
     } catch (error) {
-      console.error("Wishlist toggle error:", error);
       toast.error(error.payload || "Something went wrong");
     }
   };
+
+  // Check if product is out of stock or max quantity reached
+  const isOutOfStock = quickView.countInStock === 0;
+  const isMaxQuantityReached = !canAddToCart;
+  const isLoading = addingToCart || cartLoading;
 
   return (
     <motion.div
@@ -191,15 +231,33 @@ const QuickViewModal = ({ quickView, onClose }) => {
                       ? `${quickView.countInStock} items available`
                       : "Out of stock"}
                   </span>
+                  {isMaxQuantityReached && !isOutOfStock && (
+                    <span className="text-sm text-orange-600 font-medium">
+                      • Max quantity in cart
+                    </span>
+                  )}
                 </div>
                 <div className="flex gap-4 pt-4">
                   <button
                     onClick={handleAddToCart}
-                    className="flex-1 bg-green-500 hover:bg-green-600 text-white py-4 px-8 rounded-xl font-semibold text-lg transition-colors hover:shadow-lg cursor-pointer flex items-center justify-center gap-3 disabled:opacity-50 disabled:cursor-not-allowed"
-                    disabled={quickView.countInStock === 0}
+                    disabled={isLoading || isOutOfStock || isMaxQuantityReached}
+                    className={`flex-1 py-4 px-8 rounded-xl font-semibold text-lg transition-colors hover:shadow-lg flex items-center justify-center gap-3 ${
+                      isOutOfStock || isMaxQuantityReached
+                        ? "bg-gray-400 cursor-not-allowed"
+                        : "bg-green-500 hover:bg-green-600 cursor-pointer text-white"
+                    } ${isLoading ? "opacity-50 cursor-not-allowed" : ""}`}
                   >
-                    <ShoppingBag size={24} />
-                    Add to Cart
+                    {isLoading ? (
+                      <>
+                        <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                        Adding...
+                      </>
+                    ) : (
+                      <>
+                        <ShoppingBag size={24} />
+                        Add to Cart
+                      </>
+                    )}
                   </button>
                   <button
                     onClick={handleWishlistToggle}
@@ -222,10 +280,11 @@ const QuickViewModal = ({ quickView, onClose }) => {
                     />
                   </button>
                 </div>
-                {quickView.countInStock === 0 && (
-                  <span className="text-xs text-red-500 block mt-1 text-center">
-                    Out of Stock
-                  </span>
+                {cartError && (
+                  <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg flex items-center gap-2">
+                    <span>⚠</span>
+                    {cartError}
+                  </div>
                 )}
               </div>
             </div>

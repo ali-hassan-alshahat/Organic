@@ -15,6 +15,7 @@ const loadGuestCartFromLocalStorage = () => {
     return [];
   }
 };
+
 const transformBackendCart = (backendCart) => {
   if (!backendCart || !Array.isArray(backendCart)) return [];
 
@@ -24,38 +25,54 @@ const transformBackendCart = (backendCart) => {
     cartItemId: item._id,
   }));
 };
+
+const validateQuantityAgainstStock = (product, quantity) => {
+  return Math.min(quantity, product.countInStock);
+};
+
 export const addToCart = createAsyncThunk(
   "cart/addToCart",
   async ({ productId, quantity }, { rejectWithValue, getState }) => {
     try {
       const state = getState();
       const token = state.auth.token;
-
+      const productResponse = await fetch(
+        `http://localhost:8000/api/products/${productId}`,
+      );
+      if (!productResponse.ok) {
+        throw new Error("Failed to fetch product details");
+      }
+      const productData = await productResponse.json();
+      const product = productData.data?.product;
+      if (!product) {
+        throw new Error("Product not found");
+      }
+      const validQuantity = validateQuantityAgainstStock(product, quantity);
+      if (validQuantity === 0) {
+        throw new Error("Product is out of stock");
+      }
       if (!token) {
         // If user is not logged in, save to guest cart
         return {
-          productId,
-          quantity,
+          product: { ...product, quantity: validQuantity },
           local: true,
           guest: true,
         };
       }
-
       const response = await fetch("http://localhost:8000/api/users/cart", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify({ productId, quantity }),
+        body: JSON.stringify({ productId, quantity: validQuantity }),
       });
-
       if (!response.ok) {
         throw new Error("Failed to add to cart");
       }
 
       const data = await response.json();
-      return data;
+      return { ...data, product: { ...product, quantity: validQuantity } };
     } catch (error) {
       return rejectWithValue(error.message);
     }
@@ -105,28 +122,50 @@ export const syncGuestCartToServer = createAsyncThunk(
       const token = state.auth.token;
       const guestCart = loadGuestCartFromLocalStorage();
       if (!token || guestCart.length === 0) {
-        return { success: true, message: "No guest cart to sync" };
+        return { success: true, message: "No guest cart to sync", items: [] };
       }
       // Sync each item from guest cart to server
-      const syncPromises = guestCart.map((item) =>
-        fetch("http://localhost:8000/api/users/cart", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-          body: JSON.stringify({
-            productId: item._id,
-            quantity: item.quantity,
-          }),
-        }),
-      );
+      for (const item of guestCart) {
+        // Validate quantity against current stock before syncing
+        const productResponse = await fetch(
+          `http://localhost:8000/api/products/${item._id}`,
+        );
+        if (productResponse.ok) {
+          const productData = await productResponse.json();
+          const currentProduct = productData.data?.product;
+          if (currentProduct) {
+            const validQuantity = validateQuantityAgainstStock(
+              currentProduct,
+              item.quantity,
+            );
 
-      await Promise.all(syncPromises);
+            await fetch("http://localhost:8000/api/users/cart", {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${token}`,
+              },
+              body: JSON.stringify({
+                productId: item._id,
+                quantity: validQuantity,
+              }),
+            });
+          }
+        }
+        // Small delay to avoid overwhelming the server
+        await new Promise((resolve) => setTimeout(resolve, 100));
+      }
       // Clear guest cart after successful sync
       localStorage.removeItem("guestCart");
-      return { success: true, message: "Guest cart synced successfully" };
+
+      console.log("Guest cart synced successfully");
+      return {
+        success: true,
+        message: "Guest cart synced successfully",
+        items: guestCart,
+      };
     } catch (error) {
+      console.error("Sync guest cart error:", error);
       return rejectWithValue(error.message);
     }
   },
@@ -146,15 +185,28 @@ const cartSlice = createSlice({
     addItemToCart: (state, action) => {
       const product = action.payload;
       const existingItem = state.items.find((item) => item._id === product._id);
+
       if (existingItem) {
-        if (existingItem.quantity < existingItem.countInStock) {
-          existingItem.quantity += 1;
+        // Check if we can add more without exceeding stock
+        const newQuantity = existingItem.quantity + 1;
+        if (newQuantity <= existingItem.countInStock) {
+          existingItem.quantity = newQuantity;
         }
+        // If it would exceed stock, don't change the quantity
       } else {
-        state.items.push({
-          ...product,
-          quantity: 1,
-        });
+        // Adding new item - start with quantity 1 (or whatever is passed)
+        const initialQuantity = product.quantity || 1;
+        const validQuantity = validateQuantityAgainstStock(
+          product,
+          initialQuantity,
+        );
+
+        if (validQuantity > 0) {
+          state.items.push({
+            ...product,
+            quantity: validQuantity,
+          });
+        }
       }
       updateCartTotals(state);
       // Save to localStorage if guest user
@@ -176,13 +228,44 @@ const cartSlice = createSlice({
       if (existingItem) {
         if (quantity <= 0) {
           state.items = state.items.filter((item) => item._id !== productId);
-        } else if (quantity <= existingItem.countInStock) {
-          existingItem.quantity = quantity;
+        } else {
+          // Validate against stock
+          const validQuantity = validateQuantityAgainstStock(
+            existingItem,
+            quantity,
+          );
+          existingItem.quantity = validQuantity;
         }
       }
       updateCartTotals(state);
       if (state.isGuest) {
         saveGuestCartToLocalStorage(state.items);
+      }
+    },
+    incrementQuantity: (state, action) => {
+      const productId = action.payload;
+      const existingItem = state.items.find((item) => item._id === productId);
+      if (existingItem && existingItem.quantity < existingItem.countInStock) {
+        existingItem.quantity += 1;
+        updateCartTotals(state);
+        if (state.isGuest) {
+          saveGuestCartToLocalStorage(state.items);
+        }
+      }
+    },
+    decrementQuantity: (state, action) => {
+      const productId = action.payload;
+      const existingItem = state.items.find((item) => item._id === productId);
+      if (existingItem) {
+        if (existingItem.quantity > 1) {
+          existingItem.quantity -= 1;
+        } else {
+          state.items = state.items.filter((item) => item._id !== productId);
+        }
+        updateCartTotals(state);
+        if (state.isGuest) {
+          saveGuestCartToLocalStorage(state.items);
+        }
       }
     },
     clearCart: (state) => {
@@ -223,7 +306,23 @@ const cartSlice = createSlice({
       .addCase(addToCart.fulfilled, (state, action) => {
         state.loading = false;
         if (action.payload.guest) {
-          // For guest users, save to localStorage
+          // For guest users, add to local cart
+          const { product } = action.payload;
+          const existingItem = state.items.find(
+            (item) => item._id === product._id,
+          );
+
+          if (existingItem) {
+            const newQuantity = existingItem.quantity + product.quantity;
+            existingItem.quantity = validateQuantityAgainstStock(
+              existingItem,
+              newQuantity,
+            );
+          } else {
+            state.items.push(product);
+          }
+          state.isGuest = true;
+          updateCartTotals(state);
           saveGuestCartToLocalStorage(state.items);
         } else if (action.payload.data?.cart) {
           const transformedItems = transformBackendCart(
@@ -261,8 +360,8 @@ const cartSlice = createSlice({
       // Sync Guest Cart to Server
       .addCase(syncGuestCartToServer.fulfilled, (state, action) => {
         state.isGuest = false;
-        state.items = action.payload.items;
-        updateCartTotals(state);
+        // Don't set items from payload as they might be outdated
+        // Instead, refetch the cart from server
       });
   },
 });
@@ -283,6 +382,8 @@ export const {
   addItemToCart,
   removeItem,
   updateQuantity,
+  incrementQuantity,
+  decrementQuantity,
   clearCart,
   clearError,
   setCartItems,
@@ -297,3 +398,10 @@ export const selectTotalQuantity = (state) => state.cart.totalQuantity;
 export const selectTotalAmount = (state) => state.cart.totalAmount;
 export const selectCartLoading = (state) => state.cart.loading;
 export const selectIsGuestCart = (state) => state.cart.isGuest;
+export const selectCanAddToCart =
+  (productId, quantity = 1) =>
+  (state) => {
+    const product = state.cart.items.find((item) => item._id === productId);
+    if (!product) return true;
+    return product.quantity + quantity <= product.countInStock;
+  };
