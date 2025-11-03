@@ -11,7 +11,7 @@ const ProductInfo = ({ product }) => {
   ];
 
   return (
-    <div className="space-y-5 sm:space-y-6">
+    <div className="space-y-3 sm:space-y-4">
       <div className="flex justify-between items-start">
         <div>
           <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-gray-900 mb-2 leading-tight">
@@ -75,7 +75,7 @@ const ProductInfo = ({ product }) => {
           </span>
         )}
       </div>
-      <div className="flex flex-wrap gap-2 text-gray-600 text-sm sm:text-base">
+      <div className="flex flex-wrap gap-2 text-gray-600 text-sm sm:text-base mb-2">
         <span>Category:</span>
         <span className="font-semibold text-gray-900">
           {product.category?.name}
