@@ -16,6 +16,7 @@ import { initializeAuth } from "./rtk/slices/authSlice";
 import { fetchCart, switchToGuestCart } from "./rtk/slices/cartSlice";
 import { fetchWishlist } from "./rtk/slices/wishlistSlice";
 import AdminLogin from "./pages/AdminLogin";
+import ErrorPage from "./pages/ErrorPage";
 
 function App() {
   const dispatch = useDispatch();
@@ -54,6 +55,7 @@ function App() {
         { path: "/login", element: <Login /> },
         { path: "/register", element: <Register /> },
         { path: "/admin/login", element: <AdminLogin /> },
+        { path: "*", element: <ErrorPage /> },
       ],
     },
   ]);
