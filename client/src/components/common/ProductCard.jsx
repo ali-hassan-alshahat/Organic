@@ -41,6 +41,7 @@ const ProductCard = ({ product, onQuickView }) => {
     );
     setIsInWishlist(inWishlist);
   }, [wishlistItems, product._id]);
+
   useEffect(() => {
     const inCart = cartItems.some((item) => item._id === product._id);
     setIsProductInCart(inCart);
@@ -86,7 +87,17 @@ const ProductCard = ({ product, onQuickView }) => {
         toast.success(`Added ${product.name} to cart successfully`);
         setIsProductInCart(true);
       } else {
-        dispatch(addItemToCart(product));
+        const productForCart = {
+          _id: product._id,
+          name: product.name,
+          price: product.price,
+          salePrice: product.salePrice,
+          image: product.image,
+          countInStock: product.countInStock,
+          category: product.category,
+          quantity: 1,
+        };
+        dispatch(addItemToCart(productForCart));
         toast.success(`Added ${product.name} to cart successfully`);
         setIsProductInCart(true);
       }

@@ -24,7 +24,7 @@ const Shop = () => {
   const [filters, setFilters] = useState({
     category: "",
     priceRange: [0, 100],
-    rating: 0,
+    rating: "",
   });
   const [currentPage, setCurrentPage] = useState(1);
   const [productsPerPage] = useState(9);
@@ -134,7 +134,7 @@ const Shop = () => {
   const handleRatingChange = (rating) => {
     setFilters((prev) => ({
       ...prev,
-      rating: prev.rating === rating ? 0 : rating,
+      rating: prev.rating === rating ? "" : rating,
     }));
   };
 
@@ -142,7 +142,7 @@ const Shop = () => {
     setFilters({
       category: "",
       priceRange: [0, 100],
-      rating: 0,
+      rating: "",
     });
     setSortBy("newest");
     window.scrollTo({
@@ -183,6 +183,7 @@ const Shop = () => {
             onPriceChange={handlePriceChange}
             onRatingChange={handleRatingChange}
             renderStars={renderStars}
+            onClearFilters={clearAllFilters}
           />
 
           <div className="lg:col-span-9 md:col-span-8">
