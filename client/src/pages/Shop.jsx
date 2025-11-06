@@ -1,6 +1,6 @@
 import axios from "axios";
 import DynamicBreadcrumb from "../components/DynamicBreadcrumb";
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState, useCallback } from "react";
 import { motion } from "motion/react";
 import { useLocation } from "react-router-dom";
 import {
@@ -80,12 +80,15 @@ const Shop = () => {
       }
       return true;
     });
+
     filtered.sort((a, b) => {
       switch (sortBy) {
         case "newest":
           return new Date(b.createdAt) - new Date(a.createdAt);
         case "oldest":
           return new Date(a.createdAt) - new Date(b.createdAt);
+        default:
+          return 0;
       }
     });
     return filtered;
@@ -100,56 +103,45 @@ const Shop = () => {
   );
   const totalPages = Math.ceil(filteredProducts.length / productsPerPage);
 
-  // Reset to page 1 when filters change
+  // Reset to page 1 when filters/sort change
   useEffect(() => {
     setCurrentPage(1);
   }, [filters, sortBy]);
 
   const paginate = (pageNumber) => {
     setCurrentPage(pageNumber);
-    window.scrollTo({
-      top: 0,
-      behavior: "smooth",
-    });
+    window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
-  const handleSortChange = (value) => {
-    setSortBy(value);
-  };
+  const handleSortChange = (value) => setSortBy(value);
 
-  const handleCategoryChange = (categoryName) => {
+  const handleCategoryChange = useCallback((categoryName) => {
     setFilters((prev) => ({
       ...prev,
       category: prev.category === categoryName ? "" : categoryName,
     }));
-  };
+  }, []);
 
-  const handlePriceChange = (values) => {
+  const handlePriceChange = useCallback((values) => {
+    // Called only after slider release
     setFilters((prev) => ({
       ...prev,
       priceRange: values,
     }));
-  };
+  }, []);
 
-  const handleRatingChange = (rating) => {
+  const handleRatingChange = useCallback((rating) => {
     setFilters((prev) => ({
       ...prev,
       rating: prev.rating === rating ? "" : rating,
     }));
-  };
+  }, []);
 
-  const clearAllFilters = () => {
-    setFilters({
-      category: "",
-      priceRange: [0, 100],
-      rating: "",
-    });
+  const clearAllFilters = useCallback(() => {
+    setFilters({ category: "", priceRange: [0, 100], rating: "" });
     setSortBy("newest");
-    window.scrollTo({
-      top: 0,
-      behavior: "smooth",
-    });
-  };
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }, []);
 
   if (loading) {
     return (
@@ -168,6 +160,7 @@ const Shop = () => {
           { label: "Shop", href: "/shop" },
         ]}
       />
+
       <motion.div
         initial={{ opacity: 0, y: 50 }}
         animate={{ opacity: 1, y: 0 }}
@@ -196,6 +189,7 @@ const Shop = () => {
                       filteredProducts.length,
                     )} of ${filteredProducts.length} products`}
               </p>
+
               <DropdownMenu>
                 <DropdownMenuTrigger className="flex items-center gap-2 cursor-pointer px-3 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors">
                   <span className="text-sm text-gray-600">Sort by:</span>
@@ -225,7 +219,6 @@ const Shop = () => {
               loading={loading}
               onQuickView={openQuickView}
             />
-
             <Pagination
               currentPage={currentPage}
               totalPages={totalPages}
