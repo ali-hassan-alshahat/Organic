@@ -169,7 +169,7 @@ const FilterSidebar = ({
       <div className="border-b">
         <button
           onClick={() => toggleSection("categories")}
-          className="w-full p-6 flex items-center justify-between hover:bg-gray-50 transition-colors"
+          className="w-full p-6 flex items-center justify-between hover:bg-gray-50 transition-colors cursor-pointer"
         >
           <h3 className="text-lg font-semibold">Categories</h3>
           {expandedSections.categories ? (
@@ -180,7 +180,7 @@ const FilterSidebar = ({
         </button>
 
         <div
-          className={`overflow-hidden transition-all duration-300 ${
+          className={`overflow-hidden transition-all duration-300  ${
             expandedSections.categories
               ? "max-h-[500px] opacity-100"
               : "max-h-0 opacity-0"
@@ -239,7 +239,7 @@ const FilterSidebar = ({
       <div className="border-b">
         <button
           onClick={() => toggleSection("price")}
-          className="w-full p-6 flex items-center justify-between hover:bg-gray-50 transition-colors"
+          className="w-full p-6 flex items-center justify-between hover:bg-gray-50 transition-colors cursor-pointer"
         >
           <h3 className="text-lg font-semibold">Price</h3>
           {expandedSections.price ? (
@@ -275,7 +275,7 @@ const FilterSidebar = ({
       <div className="border-b">
         <button
           onClick={() => toggleSection("rating")}
-          className="w-full p-6 flex items-center justify-between hover:bg-gray-50 transition-colors"
+          className="w-full p-6 flex items-center justify-between hover:bg-gray-50 transition-colors cursor-pointer"
         >
           <h3 className="text-lg font-semibold">Rating</h3>
           {expandedSections.rating ? (
@@ -342,7 +342,7 @@ const FilterSidebar = ({
   if (!isDesktop) {
     return (
       <>
-        <div className="fixed -left-10 top-1/2 transform -translate-y-1/2 -rotate-90 z-40 lg:hidden">
+        <div className="fixed -left-11 top-1/2 transform -translate-y-1/2 -rotate-90 z-40 lg:hidden">
           <Sheet open={isSheetOpen} onOpenChange={setIsSheetOpen}>
             <SheetTrigger asChild>
               <Button className="bg-[var(--main-primary)] hover:bg-[var(--hard-primary)] text-white shadow-lg px-5 rounded-3xl rounded-t-[1px] h-[40px] flex items-center gap-2">

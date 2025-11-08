@@ -216,11 +216,11 @@ const ProductDetails = () => {
         </div>
         <hr className="mx-auto max-w-7xl" />
         <div className="w-full max-w-7xl mx-auto mt-8 px-4 sm:px-6">
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-2 sm:gap-8">
-            <div className="lg:col-span-2">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-2 sm:gap-8">
+            <div>
               <ProductReviews reviews={product.reviews} />
             </div>
-            <div className="lg:col-span-1">
+            <div>
               <ProductSidebar />
             </div>
           </div>

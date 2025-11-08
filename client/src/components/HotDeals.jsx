@@ -34,7 +34,7 @@ const HotDeals = () => {
         data={data}
         loading={loading}
         onQuickView={openQuickView}
-        className="pt-4"
+        className="pt-4 center"
       />
       <QuickViewModal quickView={quickView} onClose={closeQuickView} />
     </>
