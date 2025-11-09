@@ -18,6 +18,7 @@ import { fetchWishlist, initializeWishlist } from "./rtk/slices/wishlistSlice";
 import AdminLogin from "./pages/AdminLogin";
 import ErrorPage from "./pages/ErrorPage";
 import Wishlist from "./pages/Wishlist";
+import Cart from "./pages/Cart";
 
 function App() {
   const dispatch = useDispatch();
@@ -59,6 +60,7 @@ function App() {
         { path: "/register", element: <Register /> },
         { path: "/admin/login", element: <AdminLogin /> },
         { path: "/wishlist", element: <Wishlist /> },
+        { path: "/cart", element: <Cart /> },
         { path: "*", element: <ErrorPage /> },
       ],
     },
