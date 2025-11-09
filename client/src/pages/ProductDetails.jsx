@@ -17,7 +17,6 @@ import {
 import { selectIsAuthenticated } from "@/rtk/slices/authSlice";
 import toast from "react-hot-toast";
 import { useQuickView } from "@/hooks/useQuickView";
-import Newsletter from "@/components/Newsletter";
 import ProductImageGallery from "@/components/productDetails/ProductImageGallery";
 import ProductInfo from "@/components/productDetails/ProductInfo";
 import ProductActions from "@/components/productDetails/ProductActions";
@@ -233,7 +232,6 @@ const ProductDetails = () => {
           onCloseQuickView={closeQuickView}
         />
       </div>
-      <Newsletter />
     </div>
   );
 };

@@ -48,6 +48,7 @@ const WishlistHeader = ({ productsCount }) => {
             >
               <Link to="/shop">
                 <Plus className="w-4 h-4" />
+                Continue Shopping
               </Link>
             </Button>
           </div>
