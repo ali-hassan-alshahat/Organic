@@ -24,7 +24,6 @@ const Home = () => {
       <FeaturedBanner />
       <CompaniesVector />
       <SocialsBanner />
-      <Newsletter />
     </>
   );
 };
