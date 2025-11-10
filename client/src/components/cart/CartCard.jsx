@@ -3,16 +3,14 @@ import { Link } from "react-router-dom";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Eye, X, Minus, Plus } from "lucide-react";
+import { Eye, Minus, Plus } from "lucide-react";
 import CartActions from "./CartActions";
 
 const CartCard = ({
   products,
   cartItems,
-  processingItems,
   setProcessingItems,
   onQuantityChange,
-  onRemoveFromCart,
 }) => {
   const getCartItem = (productId) => {
     return cartItems.find(
@@ -32,7 +30,6 @@ const CartCard = ({
         {products.map((product) => {
           const cartItem = getCartItem(product._id);
           const isInCart = !!cartItem;
-          const isProcessing = processingItems[product._id];
           const isOutOfStock = product.countInStock === 0;
           const subtotal = calculateSubtotal(product, cartItem);
 
@@ -41,10 +38,6 @@ const CartCard = ({
               <div className="flex gap-4">
                 <ProductImage product={product} />
                 <div className="flex-1 min-w-0">
-                  <ProductHeader
-                    product={product}
-                    onRemoveFromCart={onRemoveFromCart}
-                  />
                   <ProductDetails product={product} />
                   <ProductBadges
                     isOutOfStock={isOutOfStock}
@@ -60,9 +53,7 @@ const CartCard = ({
                   />
                   <CartActions
                     product={product}
-                    isProcessing={isProcessing}
                     setProcessingItems={setProcessingItems}
-                    onRemoveFromCart={onRemoveFromCart}
                   />
                 </div>
               </div>
@@ -90,22 +81,6 @@ const ProductImage = ({ product }) => (
       <Link to={`/product/${product._id}`}>
         <Eye className="w-3.5 h-3.5" />
       </Link>
-    </Button>
-  </div>
-);
-
-const ProductHeader = ({ product, onRemoveFromCart }) => (
-  <div className="flex justify-between items-start mb-2">
-    <h3 className="font-medium text-gray-900 text-lg line-clamp-2 flex-1">
-      {product.name}
-    </h3>
-    <Button
-      onClick={() => onRemoveFromCart(product._id)}
-      variant="ghost"
-      size="sm"
-      className="text-red-600 hover:text-red-700 hover:bg-red-50 cursor-pointer ml-2 flex-shrink-0"
-    >
-      <X className="w-4 h-4" />
     </Button>
   </div>
 );

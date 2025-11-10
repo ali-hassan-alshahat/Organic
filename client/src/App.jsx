@@ -3,7 +3,6 @@ import { Toaster } from "react-hot-toast";
 import Layout from "./components/Layout";
 import Shop from "./pages/Shop";
 import Home from "./pages/Home";
-import Blog from "./pages/Blog";
 import About from "./pages/About";
 import { Contact } from "lucide-react";
 import Faq from "./pages/Faq";
@@ -51,7 +50,6 @@ function App() {
           element: <Home />,
         },
         { path: "/shop", element: <Shop /> },
-        { path: "/blog", element: <Blog /> },
         { path: "/about", element: <About /> },
         { path: "/contact", element: <Contact /> },
         { path: "/faq", element: <Faq /> },

@@ -16,10 +16,8 @@ import CartActions from "./CartActions";
 const CartTable = ({
   products,
   cartItems,
-  processingItems,
   setProcessingItems,
   onQuantityChange,
-  onRemoveFromCart,
 }) => {
   const getCartStatus = (productId) => {
     return cartItems.some((item) => {
@@ -65,7 +63,6 @@ const CartTable = ({
           {products.map((product) => {
             const cartItem = getCartItem(product._id);
             const isInCart = getCartStatus(product._id);
-            const isProcessing = processingItems[product._id];
             const subtotal = calculateSubtotal(product, cartItem);
             return (
               <TableRow
@@ -92,9 +89,7 @@ const CartTable = ({
                 <TableCell>
                   <CartActions
                     product={product}
-                    isProcessing={isProcessing}
                     setProcessingItems={setProcessingItems}
-                    onRemoveFromCart={onRemoveFromCart}
                   />
                 </TableCell>
               </TableRow>

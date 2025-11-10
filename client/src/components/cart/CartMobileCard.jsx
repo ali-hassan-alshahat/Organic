@@ -3,12 +3,13 @@ import { Link } from "react-router-dom";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Eye, Minus, Plus, X } from "lucide-react";
+import CartActions from "./CartActions";
 
 const CartMobileCard = ({
   products,
   cartItems,
   onQuantityChange,
-  onRemoveFromCart,
+  setProcessingItems,
 }) => {
   const getCartItem = (id) =>
     cartItems.find((item) => item._id === id || item.product?._id === id);
@@ -28,12 +29,10 @@ const CartMobileCard = ({
               key={product._id}
               className="p-5 relative bg-white rounded-xl shadow-sm"
             >
-              <button
-                onClick={() => onRemoveFromCart(product._id)}
-                className="absolute right-3 top-3 text-red-600 hover:text-red-700 hover:bg-red-50 cursor-pointer"
-              >
-                <X size={20} />
-              </button>
+              <CartActions
+                product={product}
+                setProcessingItems={setProcessingItems}
+              />
               <div className="w-full flex justify-center mb-3">
                 <div className="relative">
                   <img

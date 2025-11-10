@@ -5,11 +5,7 @@ import CartMobileCard from "@/components/cart/CartMobileCard";
 import CartTable from "@/components/cart/CartTable";
 import DynamicBreadcrumb from "@/components/DynamicBreadcrumb";
 import { Card, CardContent } from "@/components/ui/card";
-import {
-  fetchCart,
-  updateQuantity,
-  removeFromCart,
-} from "@/rtk/slices/cartSlice";
+import { fetchCart, updateQuantity } from "@/rtk/slices/cartSlice";
 import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import toast from "react-hot-toast";
@@ -56,14 +52,17 @@ const Cart = () => {
       const newQuantity = currentQuantity + change;
       const product = products.find((p) => p._id === productId);
       if (!product) return;
+
       if (newQuantity < 1) {
-        await handleRemoveFromCart(productId);
+        toast.error("Quantity cannot be less than 1");
         return;
       }
+
       if (newQuantity > product.countInStock) {
         toast.error(`Only ${product.countInStock} items available in stock`);
         return;
       }
+
       dispatch(updateQuantity({ productId, quantity: newQuantity }));
       if (change > 0) {
         toast.success(`Quantity increased to ${newQuantity}`);
@@ -73,19 +72,6 @@ const Cart = () => {
     } catch (error) {
       console.error("Failed to update quantity:", error);
       toast.error("Failed to update quantity");
-    }
-  };
-
-  const handleRemoveFromCart = async (productId) => {
-    try {
-      setProcessingItems((prev) => ({ ...prev, [productId]: true }));
-      await dispatch(removeFromCart(productId)).unwrap();
-      toast.success("Item removed from cart");
-    } catch (error) {
-      console.error("Failed to remove item:", error);
-      toast.error("Failed to remove item from cart");
-    } finally {
-      setProcessingItems((prev) => ({ ...prev, [productId]: false }));
     }
   };
 
@@ -121,7 +107,6 @@ const Cart = () => {
                     processingItems={processingItems}
                     setProcessingItems={setProcessingItems}
                     onQuantityChange={handleQuantityChange}
-                    onRemoveFromCart={handleRemoveFromCart}
                   />
                   <CartCard
                     products={products}
@@ -129,7 +114,6 @@ const Cart = () => {
                     processingItems={processingItems}
                     setProcessingItems={setProcessingItems}
                     onQuantityChange={handleQuantityChange}
-                    onRemoveFromCart={handleRemoveFromCart}
                   />
                   <CartMobileCard
                     products={products}
@@ -137,7 +121,6 @@ const Cart = () => {
                     processingItems={processingItems}
                     setProcessingItems={setProcessingItems}
                     onQuantityChange={handleQuantityChange}
-                    onRemoveFromCart={handleRemoveFromCart}
                   />
                 </div>
                 <div className="lg:col-span-4">
