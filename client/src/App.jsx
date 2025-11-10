@@ -4,7 +4,6 @@ import Layout from "./components/Layout";
 import Shop from "./pages/Shop";
 import Home from "./pages/Home";
 import About from "./pages/About";
-import { Contact } from "lucide-react";
 import Faq from "./pages/Faq";
 import ProductDetails from "./pages/ProductDetails";
 import Register from "./pages/Register";
@@ -18,6 +17,7 @@ import AdminLogin from "./pages/AdminLogin";
 import ErrorPage from "./pages/ErrorPage";
 import Wishlist from "./pages/Wishlist";
 import Cart from "./pages/Cart";
+import Contacts from "./pages/Contacts";
 
 function App() {
   const dispatch = useDispatch();
@@ -51,7 +51,7 @@ function App() {
         },
         { path: "/shop", element: <Shop /> },
         { path: "/about", element: <About /> },
-        { path: "/contact", element: <Contact /> },
+        { path: "/contacts", element: <Contacts /> },
         { path: "/faq", element: <Faq /> },
         { path: "/product/:id", element: <ProductDetails /> },
         { path: "/login", element: <Login /> },

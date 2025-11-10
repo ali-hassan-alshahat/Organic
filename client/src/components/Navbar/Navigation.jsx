@@ -7,7 +7,7 @@ const Navigation = () => {
     { label: "Home", href: "/" },
     { label: "Shop", href: "/shop" },
     { label: "About Us", href: "/about" },
-    { label: "Contacts", href: "/contact" },
+    { label: "Contacts", href: "/contacts" },
     { label: "Faq", href: "/faq" },
   ];
 
