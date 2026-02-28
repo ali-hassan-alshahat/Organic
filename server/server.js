@@ -7,6 +7,7 @@ const categoryRoutes = require("./routes/category.routes");
 const usersRoutes = require("./routes/users.routes");
 const adminRoutes = require("./routes/admin.routes");
 const wishlistRoutes = require("./routes/wishlist.routes");
+const orderRoutes = require("./routes/order.routes");
 const { notFound, errorHandler } = require("./middleware/error.middleware");
 
 dotenv.config();
@@ -23,6 +24,7 @@ app.use("/api/products", productRoutes);
 app.use("/api/users", usersRoutes);
 app.use("/api/admin", adminRoutes);
 app.use("/api/users", wishlistRoutes);
+app.use("/api/orders", orderRoutes);
 
 // Health
 app.get("/", (req, res) => res.send("Server is running successfully 🚀"));

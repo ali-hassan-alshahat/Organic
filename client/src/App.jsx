@@ -18,6 +18,9 @@ import ErrorPage from "./pages/ErrorPage";
 import Wishlist from "./pages/Wishlist";
 import Cart from "./pages/Cart";
 import Contacts from "./pages/Contacts";
+import Checkout from "./pages/Checkout";
+import OrderConfirmation from "./pages/OrderConfirmation";
+import OrdersList from "./pages/OrderList";
 
 function App() {
   const dispatch = useDispatch();
@@ -59,6 +62,15 @@ function App() {
         { path: "/admin/login", element: <AdminLogin /> },
         { path: "/wishlist", element: <Wishlist /> },
         { path: "/cart", element: <Cart /> },
+        { path: "/checkout", element: <Checkout /> },
+        {
+          path: "/orders",
+          element: <OrdersList />,
+        },
+        {
+          path: "/order-confirmation/:orderId",
+          element: <OrderConfirmation />,
+        },
         { path: "*", element: <ErrorPage /> },
       ],
     },
