@@ -26,7 +26,7 @@ const syncGuestCartWithToken = async (token, guestCart) => {
   if (!token || guestCart.length === 0) return;
   for (const item of guestCart) {
     try {
-      await fetch("http://localhost:8000/api/users/cart", {
+      await fetch("/api/users/cart", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -50,7 +50,7 @@ const syncGuestWishlistWithToken = async (token, guestWishlist) => {
   for (const item of guestWishlist) {
     try {
       const productId = item.productId?._id || item.productId;
-      await fetch("http://localhost:8000/api/wishlist", {
+      await fetch("/api/wishlist", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

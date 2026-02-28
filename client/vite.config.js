@@ -8,6 +8,14 @@ export default defineConfig({
   plugins: [react(), tailwindcss(), svgr()],
   server: {
     port: 3000,
+    proxy: {
+      // Proxy API requests to your backend
+      "/api": {
+        target: "http://localhost:8000",
+        changeOrigin: true,
+        secure: false,
+      },
+    },
   },
   resolve: {
     alias: {

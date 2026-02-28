@@ -38,10 +38,8 @@ const Shop = () => {
       try {
         setLoading(true);
         const url = searchQuery
-          ? `http://localhost:8000/api/products?search=${encodeURIComponent(
-              searchQuery,
-            )}`
-          : "http://localhost:8000/api/products";
+          ? `/api/products?search=${encodeURIComponent(searchQuery)}`
+          : "/api/products";
         const res = await axios.get(url);
         const products = res.data.data?.products || [];
         setData(products);
@@ -53,7 +51,7 @@ const Shop = () => {
     };
     const fetchCategories = async () => {
       try {
-        const res = await axios.get("http://localhost:8000/api/categories");
+        const res = await axios.get("/api/categories");
         const categories = res.data;
         setCategories(categories);
       } catch (err) {

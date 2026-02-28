@@ -13,9 +13,7 @@ const FeaturedBanner = () => {
     const fetchProducts = async () => {
       try {
         setLoading(true);
-        const res = await axios.get(
-          "http://localhost:8000/api/products?isFeatured=true",
-        );
+        const res = await axios.get("/api/products?isFeatured=true");
         const products = res.data.data?.products;
         setData(products);
       } catch (err) {

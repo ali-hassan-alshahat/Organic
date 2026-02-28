@@ -41,14 +41,11 @@ const OrdersList = () => {
       setLoading(true);
 
       // TODO: Confirm your actual API endpoint
-      const response = await fetch(
-        "http://localhost:8000/api/orders/my-orders",
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
+      const response = await fetch("/api/orders/my-orders", {
+        headers: {
+          Authorization: `Bearer ${token}`,
         },
-      );
+      });
 
       const data = await response.json();
 

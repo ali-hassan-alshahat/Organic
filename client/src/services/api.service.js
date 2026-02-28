@@ -1,4 +1,4 @@
-const BASE_URL = "http://localhost:8000/api";
+const BASE_URL = import.meta.env.API_BASE_URL || "http://localhost:8000/api";
 
 export const apiService = async (endpoint, options = {}) => {
   const { method = "GET", body, headers = {}, ...rest } = options;

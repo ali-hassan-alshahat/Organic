@@ -13,9 +13,7 @@ const PopularProducts = () => {
     const fetchProducts = async () => {
       try {
         setLoading(true);
-        const res = await axios.get(
-          "http://localhost:8000/api/products?isPopular=true",
-        );
+        const res = await axios.get("/api/products?isPopular=true");
         const products = res.data.data?.products;
         setData(products);
       } catch (err) {

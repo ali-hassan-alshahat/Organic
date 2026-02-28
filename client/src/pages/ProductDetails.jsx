@@ -53,9 +53,7 @@ const ProductDetails = () => {
       try {
         setLoading(true);
         setError(null);
-        const response = await axios.get(
-          `http://localhost:8000/api/products/${id}`,
-        );
+        const response = await axios.get(`/api/products/${id}`);
         if (response.data.success) {
           setData(response.data.data);
         } else {

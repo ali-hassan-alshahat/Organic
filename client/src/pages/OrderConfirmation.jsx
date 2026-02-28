@@ -28,14 +28,11 @@ const OrderConfirmation = () => {
     const fetchOrder = async () => {
       try {
         setLoading(true);
-        const response = await fetch(
-          `http://localhost:8000/api/orders/${orderId}`,
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
+        const response = await fetch(`/api/orders/${orderId}`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
           },
-        );
+        });
 
         if (!response.ok) {
           throw new Error("Failed to fetch order details");

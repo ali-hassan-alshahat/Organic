@@ -72,7 +72,7 @@ const Checkout = () => {
       console.log("Sending order to API:", orderData);
 
       // Call order API
-      const response = await fetch("http://localhost:8000/api/orders", {
+      const response = await fetch("/api/orders", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
