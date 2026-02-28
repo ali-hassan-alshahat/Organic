@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import TopBar from "./TopBar";
-import SearchBar from "./SearchBar";
+import SearchBar from "./Searchbar";
 import Navigation from "./Navigation";
 import MobileMenu from "./MobileMenu";
 import IconsSection from "./IconsSection";
