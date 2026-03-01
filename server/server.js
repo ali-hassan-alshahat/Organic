@@ -60,6 +60,16 @@ app.get("/api/health", (req, res) => {
   });
 });
 
+app.use((req, res, next) => {
+  console.log("📨 Request received:", {
+    method: req.method,
+    url: req.url,
+    path: req.path,
+    originalUrl: req.originalUrl,
+  });
+  next();
+});
+
 // Error middlewares
 app.use(notFound);
 app.use(errorHandler);
