@@ -2,17 +2,25 @@ const express = require("express");
 const mongoose = require("mongoose");
 const dotenv = require("dotenv");
 const cors = require("cors");
-const productRoutes = require("./routes/products.routes");
-const categoryRoutes = require("./routes/category.routes");
-const usersRoutes = require("./routes/users.routes");
-const adminRoutes = require("./routes/admin.routes");
-const wishlistRoutes = require("./routes/wishlist.routes");
-const orderRoutes = require("./routes/order.routes");
-const { notFound, errorHandler } = require("./middleware/error.middleware");
+
+console.log("🚀 SERVER.JS IS LOADING ON VERCEL");
+console.log("📁 Current directory:", process.cwd());
+console.log("📦 Node version:", process.version);
+console.log("🔧 NODE_ENV:", process.env.NODE_ENV);
 
 dotenv.config();
+console.log("✅ Dotenv configured");
 
 const app = express();
+console.log("✅ Express app created");
+
+// Log all requests
+app.use((req, res, next) => {
+  console.log(`🔥 ${new Date().toISOString()} - ${req.method} ${req.url}`);
+  console.log(`   Path: ${req.path}`);
+  console.log(`   OriginalUrl: ${req.originalUrl}`);
+  next();
+});
 
 const allowedOrigins = [
   "http://localhost:5173",
@@ -23,36 +31,46 @@ const allowedOrigins = [
 app.use(
   cors({
     origin: function (origin, callback) {
-      // Allow requests with no origin (like mobile apps, curl, Postman)
       if (!origin) return callback(null, true);
-
       if (allowedOrigins.indexOf(origin) === -1) {
         console.log("Blocked origin:", origin);
-        const msg = "CORS policy blocked this request";
-        return callback(new Error(msg), false);
+        return callback(new Error("CORS policy blocked"), false);
       }
       return callback(null, true);
     },
     credentials: true,
-    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-    allowedHeaders: ["Content-Type", "Authorization"],
   }),
 );
-
-// Handle preflight requests
+console.log("✅ CORS configured");
 
 app.use(express.json());
+console.log("✅ JSON parser configured");
 
-// Routes
-app.use("/api/categories", categoryRoutes);
-app.use("/api/products", productRoutes);
-app.use("/api/users", usersRoutes);
-app.use("/api/admin", adminRoutes);
-app.use("/api/users", wishlistRoutes);
-app.use("/api/orders", orderRoutes);
+// SIMPLE TEST ROUTE - THIS MUST WORK
+app.get("/api/test", (req, res) => {
+  console.log("✅ Test route hit!");
+  res.json({
+    success: true,
+    message: "API is working!",
+    timestamp: new Date().toISOString(),
+  });
+});
 
-app.get("/", (req, res) => res.send("Server is running successfully 🚀"));
+// Your routes
+app.use("/api/categories", require("./routes/category.routes"));
+app.use("/api/products", require("./routes/products.routes"));
+app.use("/api/users", require("./routes/users.routes"));
+app.use("/api/admin", require("./routes/admin.routes"));
+app.use("/api/users", require("./routes/wishlist.routes"));
+app.use("/api/orders", require("./routes/order.routes"));
+
+app.get("/", (req, res) => {
+  console.log("✅ Root route hit");
+  res.send("Server is running successfully 🚀");
+});
+
 app.get("/api/health", (req, res) => {
+  console.log("✅ Health route hit");
   res.json({
     status: "OK",
     message: "Server is running",
@@ -60,19 +78,18 @@ app.get("/api/health", (req, res) => {
   });
 });
 
-app.use((req, res, next) => {
-  console.log("📨 Request received:", {
-    method: req.method,
-    url: req.url,
-    path: req.path,
-    originalUrl: req.originalUrl,
-  });
-  next();
-});
-
-// Error middlewares
+// Error handlers
+const { notFound, errorHandler } = require("./middleware/error.middleware");
 app.use(notFound);
 app.use(errorHandler);
+
+console.log("✅ All routes registered");
+console.log("📋 Registered routes:");
+app._router.stack.forEach((r) => {
+  if (r.route && r.route.path) {
+    console.log(`   ${Object.keys(r.route.methods)} ${r.route.path}`);
+  }
+});
 
 const connectDB = async () => {
   try {
@@ -82,18 +99,10 @@ const connectDB = async () => {
     }
   } catch (error) {
     console.error("❌ MongoDB connection error:", error);
-    throw error;
   }
 };
 
 connectDB();
 
+console.log("✅ Server.js initialization complete");
 module.exports = app;
-
-// LOCAL DEVELOPMENT ONLY
-if (process.env.NODE_ENV !== "production") {
-  const PORT = process.env.PORT || 8000;
-  app.listen(PORT, () => {
-    console.log(`🚀 Server running locally on port ${PORT}`);
-  });
-}
