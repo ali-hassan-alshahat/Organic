@@ -38,16 +38,10 @@ const Shop = () => {
       try {
         setLoading(true);
         const url = searchQuery
-          ? `/api/products?search=${encodeURIComponent(searchQuery)}`
-          : "/api/products";
+          ? `${import.meta.env.VITE_API_URL}/api/products?search=${encodeURIComponent(searchQuery)}`
+          : `${import.meta.env.VITE_API_URL}/api/products`;
         const res = await axios.get(url);
-        let products = [];
-
-        if (Array.isArray(res?.data?.products)) {
-          products = res.data.products;
-        } else if (Array.isArray(res?.products)) {
-          products = res.products;
-        }
+        const products = res.data?.data?.products || [];
         setData(products);
       } catch (err) {
         console.error("Failed to fetch products:", err);
@@ -57,7 +51,9 @@ const Shop = () => {
     };
     const fetchCategories = async () => {
       try {
-        const res = await axios.get("/api/categories");
+        const res = await axios.get(
+          `${import.meta.env.VITE_API_URL}/api/categories`,
+        );
         const categories = res.data?.data || res.data;
         setCategories(categories);
       } catch (err) {

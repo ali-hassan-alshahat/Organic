@@ -36,7 +36,9 @@ export const addToCart = createAsyncThunk(
     try {
       const state = getState();
       const token = state.auth.token;
-      const productResponse = await fetch(`/api/products/${productId}`);
+      const productResponse = await fetch(
+        `${import.meta.env.VITE_API_URL}/api/products/${productId}`,
+      );
       if (!productResponse.ok) {
         throw new Error("Failed to fetch product details");
       }
@@ -58,14 +60,17 @@ export const addToCart = createAsyncThunk(
         };
       }
 
-      const response = await fetch("/api/users/cart", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
+      const response = await fetch(
+        `${import.meta.env.VITE_API_URL}/api/users/cart`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({ productId, quantity: validQuantity }),
         },
-        body: JSON.stringify({ productId, quantity: validQuantity }),
-      });
+      );
       if (!response.ok) {
         throw new Error("Failed to add to cart");
       }
@@ -93,11 +98,14 @@ export const fetchCart = createAsyncThunk(
           guest: true,
         };
       }
-      const response = await fetch("/api/users/cart", {
-        headers: {
-          Authorization: `Bearer ${token}`,
+      const response = await fetch(
+        `${import.meta.env.VITE_API_URL}/api/users/cart`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
         },
-      });
+      );
       if (!response.ok) {
         if (response.status === 401) {
           throw new Error("Authentication failed. Please login again.");
@@ -137,7 +145,9 @@ export const syncGuestCartToServer = createAsyncThunk(
       // Sync each item from guest cart to server
       for (const item of guestCart) {
         // Validate quantity against current stock before syncing
-        const productResponse = await fetch(`/api/products/${item._id}`);
+        const productResponse = await fetch(
+          `${import.meta.env.VITE_API_URL}/api/products/${item._id}`,
+        );
         if (productResponse.ok) {
           const productData = await productResponse.json();
           const currentProduct = productData.data?.product;
@@ -146,7 +156,7 @@ export const syncGuestCartToServer = createAsyncThunk(
               currentProduct,
               item.quantity,
             );
-            await fetch("/api/users/cart", {
+            await fetch(`${import.meta.env.VITE_API_URL}/api/users/cart`, {
               method: "POST",
               headers: {
                 "Content-Type": "application/json",
@@ -186,12 +196,15 @@ export const removeFromCart = createAsyncThunk(
         return { productId, guest: true };
       }
       // For authenticated users, remove from server
-      const response = await fetch(`/api/users/cart/${productId}`, {
-        method: "DELETE",
-        headers: {
-          Authorization: `Bearer ${token}`,
+      const response = await fetch(
+        `${import.meta.env.VITE_API_URL}/api/users/cart/${productId}`,
+        {
+          method: "DELETE",
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
         },
-      });
+      );
       if (!response.ok) {
         throw new Error("Failed to remove item from cart");
       }

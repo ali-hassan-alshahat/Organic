@@ -46,7 +46,7 @@ const SearchBar = ({
       setIsLoading(true);
       try {
         const response = await axios.get(
-          `/api/products?search=${encodeURIComponent(searchQuery)}&limit=6`,
+          `${import.meta.env.VITE_API_URL}/api/products?search=${encodeURIComponent(searchQuery)}&limit=6`,
         );
         const products = response?.data?.data?.products || [];
         setSearchSuggestions(products);

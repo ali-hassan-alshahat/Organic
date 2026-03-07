@@ -41,11 +41,14 @@ const OrdersList = () => {
       setLoading(true);
 
       // TODO: Confirm your actual API endpoint
-      const response = await fetch("/api/orders/my-orders", {
-        headers: {
-          Authorization: `Bearer ${token}`,
+      const response = await fetch(
+        `${import.meta.env.VITE_API_URL}/api/orders/my-orders`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
         },
-      });
+      );
 
       const data = await response.json();
 

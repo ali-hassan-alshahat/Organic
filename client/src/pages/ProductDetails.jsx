@@ -53,7 +53,9 @@ const ProductDetails = () => {
       try {
         setLoading(true);
         setError(null);
-        const response = await axios.get(`/api/products/${id}`);
+        const response = await axios.get(
+          `${import.meta.env.VITE_API_URL}/api/products/${id}`,
+        );
         if (response.data.success) {
           setData(response.data.data);
         } else {
