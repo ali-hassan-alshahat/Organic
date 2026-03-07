@@ -48,7 +48,7 @@ const SearchBar = ({
         const response = await axios.get(
           `/api/products?search=${encodeURIComponent(searchQuery)}&limit=6`,
         );
-        const products = response.data.data?.products || [];
+        const products = response?.data?.data?.products || [];
         setSearchSuggestions(products);
       } catch (error) {
         console.error("Failed to fetch search suggestions:", error);
