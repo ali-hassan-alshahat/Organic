@@ -41,7 +41,7 @@ const Shop = () => {
           ? `/api/products?search=${encodeURIComponent(searchQuery)}`
           : "/api/products";
         const res = await axios.get(url);
-        const products = res.data.data?.products || [];
+        const products = res.data?.data?.products || [];
         setData(products);
       } catch (err) {
         console.error("Failed to fetch products:", err);
@@ -52,7 +52,7 @@ const Shop = () => {
     const fetchCategories = async () => {
       try {
         const res = await axios.get("/api/categories");
-        const categories = res.data;
+        const categories = res.data?.data || res.data;
         setCategories(categories);
       } catch (err) {
         console.error("Failed to fetch categories:", err);
