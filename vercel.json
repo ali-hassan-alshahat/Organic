@@ -6,27 +6,18 @@
       "use": "@vercel/node"
     },
     {
-      "src": "client/**",
-      "use": "@vercel/static",
-      "config": {
-        "distDir": "client/dist"
-      }
+      "src": "client/dist/**",
+      "use": "@vercel/static"
     }
   ],
-  "installCommand": "cd client && npm install && cd ../server && npm install",
-  "buildCommand": "cd client && npm run build",
-  "outputDirectory": "client/dist",
   "routes": [
     {
       "src": "/api/(.*)",
       "dest": "server/server.js"
     },
     {
-      "handle": "filesystem"
-    },
-    {
       "src": "/(.*)",
-      "dest": "/client/dist/index.html"
+      "dest": "client/dist/$1"
     }
   ]
 }
