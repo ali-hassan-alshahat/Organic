@@ -5,12 +5,15 @@ import svgr from "vite-plugin-svgr";
 import path from "path";
 
 export default defineConfig({
-  base: "/",
   plugins: [react(), tailwindcss(), svgr()],
+
+  // Important for Vercel SPA deployment
+  base: "/",
+
   server: {
     port: 3000,
+
     proxy: {
-      // Proxy API requests to your backend
       "/api": {
         target: "http://localhost:8000",
         changeOrigin: true,
@@ -18,13 +21,17 @@ export default defineConfig({
       },
     },
   },
+
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "./src"),
     },
   },
+
   build: {
     outDir: "dist",
     assetsDir: "assets",
+    sourcemap: false,
+    emptyOutDir: true,
   },
 });
