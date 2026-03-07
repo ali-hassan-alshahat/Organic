@@ -2,6 +2,10 @@
   "version": 2,
   "builds": [
     {
+      "src": "server/server.js",
+      "use": "@vercel/node"
+    },
+    {
       "src": "client/package.json",
       "use": "@vercel/static-build",
       "config": {
@@ -9,10 +13,29 @@
       }
     }
   ],
-  "installCommand": "cd client && npm install",
+  "installCommand": "cd client && npm install && cd ../server && npm install",
   "buildCommand": "cd client && npm run build",
   "outputDirectory": "client/dist",
   "routes": [
+    {
+      "src": "/api/(.*)",
+      "dest": "server/server.js"
+    },
+    {
+      "handle": "filesystem"
+    },
+    {
+      "src": "/assets/(.*)",
+      "dest": "/assets/$1"
+    },
+    {
+      "src": "/vite.svg",
+      "dest": "/vite.svg"
+    },
+    {
+      "src": "/_redirects",
+      "dest": "/_redirects"
+    },
     {
       "src": "/(.*)",
       "dest": "/index.html"
