@@ -41,7 +41,8 @@ const Shop = () => {
           ? `/api/products?search=${encodeURIComponent(searchQuery)}`
           : "/api/products";
         const res = await axios.get(url);
-        const products = res.data?.data?.products || [];
+        const products =
+          res.data?.data?.products || res.data?.products || res.data || [];
         setData(products);
       } catch (err) {
         console.error("Failed to fetch products:", err);
