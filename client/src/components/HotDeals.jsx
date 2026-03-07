@@ -14,8 +14,7 @@ const HotDeals = () => {
       try {
         setLoading(true);
         const res = await axios.get("/api/products?isHotDeal=true");
-        const products =
-          res.data?.data?.products || res.data?.products || res.data || [];
+        const products = res.data?.data?.products || [];
         setData(products);
       } catch (err) {
         console.error("Failed to fetch products:", err);
