@@ -15,15 +15,10 @@
   ],
   "installCommand": "cd client && npm install && cd ../server && npm install",
   "buildCommand": "cd client && npm run build",
-  "outputDirectory": "client/dist",
-  "rewrites": [
+  "routes": [
     {
-      "source": "/api/(.*)",
-      "destination": "/server/server.js"
-    },
-    {
-      "source": "/(.*)",
-      "destination": "/index.html"
+      "src": "/api/(.*)",
+      "dest": "server/server.js"
     }
   ]
 }
