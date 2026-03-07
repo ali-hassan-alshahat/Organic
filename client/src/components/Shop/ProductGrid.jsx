@@ -4,6 +4,14 @@ import Skeleton from "react-loading-skeleton";
 import ProductCard from "../common/ProductCard";
 
 const ProductGrid = ({ products, loading, onQuickView, renderStars }) => {
+  if (!Array.isArray(products)) {
+    console.warn("ProductGrid received non-array:", products);
+    return (
+      <div className="text-center py-10">
+        <p className="text-red-500">Error loading products</p>
+      </div>
+    );
+  }
   if (loading) {
     return (
       <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-3 lg:grid-cols-3 border border-gray-200">
