@@ -3,23 +3,26 @@
   "builds": [
     {
       "src": "server/server.js",
-      "use": "@vercel/node",
-      "config": { "includeFiles": ["server/**"] }
+      "use": "@vercel/node"
     },
     {
-      "src": "client/**",
+      "src": "client/package.json",
       "use": "@vercel/static-build",
-      "config": { "distDir": "dist" }
+      "config": {
+        "distDir": "dist"
+      }
     }
   ],
   "routes": [
     {
       "src": "/api/(.*)",
-      "dest": "server/server.js",
-      "methods": ["GET", "POST", "PUT", "DELETE", "OPTIONS"]
+      "dest": "server/server.js"
     },
-    { "src": "/(.*)", "dest": "client/$1" }
+    {
+      "src": "/(.*)",
+      "dest": "client/dist/$1"
+    }
   ],
-  "installCommand": "cd client && npm install && cd ../server && npm install",
+  "installCommand": "cd client && npm install && cd server && npm install",
   "buildCommand": "cd client && npm run build"
 }
