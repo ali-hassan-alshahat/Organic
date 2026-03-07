@@ -14,7 +14,13 @@ const PopularProducts = () => {
       try {
         setLoading(true);
         const res = await axios.get("/api/products?isPopular=true");
-        const products = res.data?.data?.products || [];
+        let products = [];
+
+        if (Array.isArray(res?.data?.products)) {
+          products = res.data.products;
+        } else if (Array.isArray(res?.products)) {
+          products = res.products;
+        }
         setData(products);
       } catch (err) {
         console.error("Failed to fetch products:", err);
