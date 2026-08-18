@@ -68,10 +68,10 @@ const connectDB = async () => {
   try {
     if (mongoose.connection.readyState === 0) {
       await mongoose.connect(process.env.MONGO_URI);
-      console.log("✅ Connected to MongoDB");
+      console.log("Connected to MongoDB");
     }
   } catch (error) {
-    console.error("❌ MongoDB connection error:", error);
+    console.error("MongoDB connection error:", error);
     throw error;
   }
 };
